@@ -1,0 +1,3362 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "tertiary": "#eec209","surface-variant": "#353534","on-tertiary-container": "#4e3d00",
+        "surface-dim": "#131313","on-error-container": "#ffdad6","surface-container-lowest": "#0e0e0e",
+        "on-background": "#e5e2e1","surface-container": "#201f1f","primary-fixed": "#cce5ff",
+        "secondary": "#4ae183","on-primary-fixed-variant": "#004b73","on-primary-container": "#002d47",
+        "error": "#ffb4ab","outline-variant": "#3f4850","inverse-primary": "#006397",
+        "inverse-on-surface": "#313030","error-container": "#93000a","tertiary-fixed": "#ffe084",
+        "on-secondary-fixed-variant": "#005228","on-tertiary-fixed-variant": "#574500",
+        "on-tertiary-fixed": "#231b00","secondary-fixed": "#6bfe9c","on-surface-variant": "#bfc7d2",
+        "surface-tint": "#92ccff","on-error": "#690005","surface-container-low": "#1c1b1b",
+        "on-primary": "#003351","surface-container-highest": "#353534","outline": "#89929b",
+        "on-secondary-fixed": "#00210c","on-secondary": "#003919","background": "#131313",
+        "primary-fixed-dim": "#92ccff","primary-container": "#3498db","on-secondary-container": "#00431f",
+        "on-tertiary": "#3c2f00","surface": "#131313","secondary-container": "#06bb63",
+        "primary": "#92ccff","on-surface": "#e5e2e1","tertiary-container": "#cea700",
+        "on-primary-fixed": "#001d31","inverse-surface": "#e5e2e1","surface-container-high": "#2a2a2a",
+        "surface-bright": "#393939","secondary-fixed-dim": "#4ae183","tertiary-fixed-dim": "#eec209"
+      },
+      borderRadius: { DEFAULT:"0.125rem",lg:"0.25rem",xl:"0.5rem",full:"0.75rem" },
+      fontFamily: { headline:["Space Grotesk"],body:["Inter"],label:["Inter"] }
+    }
+  }
+}
+</script>
+<title>IFES — Energy IA</title>
+<style>
+  .material-symbols-outlined { font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24; }
+  .filled-icon { font-variation-settings:'FILL' 1; }
+  body { font-family:'Inter',sans-serif; background-color:#131313; color:#e5e2e1; }
+  h1,h2,h3,.display-metric { font-family:'Space Grotesk',sans-serif; }
+  ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:#353534; border-radius:10px; }
+  .page { display:none; }
+  .page.active { display:block; }
+  @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+  .skeleton { background:linear-gradient(90deg,#1c1b1b 25%,#2a2a2a 50%,#1c1b1b 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:4px; }
+  @keyframes growUp { from{height:0} to{height:var(--h)} }
+  .bar-anim { animation:growUp 0.6s ease-out forwards; }
+  @keyframes pulse2 { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(0.8)} }
+  .pulse-dot { animation:pulse2 2s infinite; }
+  @keyframes slideIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .msg-enter { animation:slideIn 0.25s ease-out; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+  .spinner { animation:spin 0.8s linear infinite; border-top-color:transparent!important; }
+  .modal-overlay { position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-6px)} }
+  .typing-dot { width:6px;height:6px;border-radius:50%;background:#4ae183;animation:bounce 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay:0.2s; }
+  .typing-dot:nth-child(3) { animation-delay:0.4s; }
+  .glass-panel { background:rgba(57,57,57,0.4);backdrop-filter:blur(20px); }
+  .nav-active { color:#34d399!important;font-weight:700!important;border-right:2px solid #34d399;background:rgba(52,211,153,0.05); }
+  /* MT specific */
+  .mt-card { background:#1c1b1b; border:1px solid rgba(63,72,80,0.3); border-radius:12px; }
+  .mt-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; }
+  .mt-table th { font-size:10px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:#89929b; padding:14px 16px; }
+  .mt-table td { font-size:13px; padding:12px 16px; border-bottom:1px solid rgba(63,72,80,0.15); }
+  .mt-table tr:last-child td { border-bottom:none; }
+  .mt-table tr:hover td { background:rgba(42,42,42,0.4); }
+  .donut-ring { transform:rotate(-90deg); transform-origin:center; }
+  @keyframes drawRing { from{stroke-dashoffset:var(--full)} to{stroke-dashoffset:var(--offset)} }
+  .ring-anim { animation:drawRing 1s ease-out forwards; }
+  .cost-bar { height:8px; border-radius:4px; transition:width 1s ease-out; }
+  .comparison-pill { display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; padding:3px 8px; border-radius:999px; }
+  /* Tooltips de ajuda (?) */
+  .help-tip { position:relative; display:inline-flex; align-items:center; vertical-align:middle; margin-left:4px; cursor:help; flex-shrink:0; }
+  .help-tip-icon { width:15px; height:15px; border-radius:50%; background:rgba(146,204,255,0.12); color:#92ccff; font-size:10px; font-weight:800; font-family:Inter,sans-serif; display:inline-flex; align-items:center; justify-content:center; border:1px solid rgba(146,204,255,0.35); line-height:1; transition:background 0.15s,color 0.15s; }
+  .help-tip:hover .help-tip-icon, .help-tip:focus-visible .help-tip-icon { background:rgba(146,204,255,0.3); color:#fff; outline:none; }
+  .help-tip-text { visibility:hidden; opacity:0; position:absolute; z-index:400; bottom:calc(100% + 10px); left:50%; transform:translateX(-50%); width:max-content; max-width:min(280px,85vw); padding:10px 12px; background:#2a2a2a; border:1px solid rgba(146,204,255,0.3); border-radius:10px; font-size:11px; font-weight:400; line-height:1.55; color:#e5e2e1; text-transform:none; letter-spacing:normal; white-space:normal; box-shadow:0 10px 30px rgba(0,0,0,0.55); pointer-events:none; transition:opacity 0.15s,visibility 0.15s; text-align:left; }
+  .help-tip-text::before { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:7px solid transparent; border-top-color:rgba(146,204,255,0.3); }
+  .help-tip-text::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); margin-top:-1px; border:6px solid transparent; border-top-color:#2a2a2a; }
+  .help-tip:hover .help-tip-text, .help-tip:focus-visible .help-tip-text { visibility:visible; opacity:1; }
+  .help-tip.tip-below .help-tip-text { bottom:auto; top:calc(100% + 10px); }
+  .help-tip.tip-below .help-tip-text::before { top:auto; bottom:100%; border-top-color:transparent; border-bottom-color:rgba(146,204,255,0.3); }
+  .help-tip.tip-below .help-tip-text::after { top:auto; bottom:100%; margin-top:0; margin-bottom:-1px; border-top-color:transparent; border-bottom-color:#2a2a2a; }
+  .help-tip.tip-left .help-tip-text { left:auto; right:0; transform:none; }
+  .label-with-tip { display:inline-flex; align-items:center; gap:2px; flex-wrap:wrap; }
+  .chat-msg-body { word-break:break-word; overflow-wrap:anywhere; white-space:normal; }
+  /* Analítico — otimização de demanda */
+  .anal-card { background:#1c1b1b; border:1px solid rgba(63,72,80,0.3); border-radius:12px; }
+  .anal-kpi { background:#201f1f; border:1px solid rgba(63,72,80,0.25); border-radius:10px; padding:1rem 1.25rem; }
+  .anal-scenario { border:1px solid rgba(63,72,80,0.35); border-radius:12px; padding:1.25rem; background:#1c1b1b; transition:border-color 0.2s; }
+  .anal-scenario.active { border-color:#4ae183; box-shadow:0 0 0 1px rgba(74,225,131,0.25); }
+  .anal-scenario-badge { font-size:10px; font-weight:800; padding:2px 8px; border-radius:999px; background:rgba(63,72,80,0.5); color:#bfc7d2; }
+  .anal-scenario-badge.warn { background:rgba(74,225,131,0.15); color:#4ae183; }
+  .anal-toggle { width:44px; height:24px; border-radius:999px; background:#353534; position:relative; cursor:pointer; transition:background 0.2s; }
+  .anal-toggle.on { background:#06bb63; }
+  .anal-toggle::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform 0.2s; }
+  .anal-toggle.on::after { transform:translateX(20px); }
+  /* Relatório de Otimização — preview estilo documento */
+  .anal-relatorio-doc { background:#fff; color:#1a1a1a; border-radius:0 0 12px 12px; }
+  .anal-relatorio-doc h4 { color:#111; font-family:'Space Grotesk',sans-serif; }
+  .anal-relatorio-doc p, .anal-relatorio-doc td, .anal-relatorio-doc th { color:#333; }
+  .anal-relatorio-doc .doc-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .anal-relatorio-doc .doc-table th, .anal-relatorio-doc .doc-table td { border:1px solid #ccc; padding:8px 10px; }
+  .anal-relatorio-doc .doc-table th { background:#f0f0f0; font-weight:700; text-align:left; }
+  .anal-relatorio-doc .doc-table td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .anal-relatorio-doc .doc-table tr.total td { font-weight:700; background:#f8f8f8; }
+  .anal-relatorio-doc .doc-table tr.economia td:last-child { color:#067a50; font-weight:800; font-size:14px; }
+  .anal-relatorio-doc .doc-footnote { font-size:10px; color:#666; line-height:1.6; }
+  .anal-relatorio-doc .chart-box { background:#fafafa; border:1px solid #ddd; border-radius:8px; padding:16px; }
+  /* Indicador IA */
+  .ia-indicador-box { border:2px solid #4ae183; background:linear-gradient(135deg,rgba(74,225,131,0.12) 0%,rgba(74,225,131,0.04) 100%); }
+  .ia-indicador-kw { font-size:3.5rem; line-height:1; font-family:'Space Grotesk',sans-serif; color:#4ae183; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body class="bg-background text-on-surface">
+
+<!-- TOKEN MODAL -->
+<div id="tokenModal" class="modal-overlay">
+  <div class="bg-surface-container-low rounded-xl p-8 w-full max-w-md mx-4 border border-outline-variant/20">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-primary-container filled-icon">bolt</span>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold font-headline text-neutral-50">IFES - Energy IA</h2>
+        <p class="text-xs text-neutral-500">Configure sua chave API</p>
+      </div>
+    </div>
+    <p class="text-sm text-on-surface-variant mb-6 leading-relaxed">
+      Para analisar suas contas de energia com IA, insira sua chave da <span class="text-primary font-semibold">API Gemini</span>. A chave fica salva apenas no seu navegador.
+    </p>
+    <div class="space-y-3">
+      <input id="tokenInput" type="password" placeholder="AIza..."
+        class="w-full bg-surface-container border border-outline-variant/30 rounded-lg px-4 py-3 text-sm text-on-surface focus:ring-1 focus:ring-primary/50 focus:outline-none placeholder:text-neutral-600"/>
+      <div id="tokenError" class="hidden text-xs text-error px-1">Chave inválida. Verifique e tente novamente.</div>
+      <button onclick="saveToken()"
+        class="w-full py-3 bg-primary-container text-on-primary-container rounded-lg font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-sm filled-icon">key</span>
+        Salvar e Continuar
+      </button>
+      <button onclick="document.getElementById('tokenModal').style.display='none'"
+        class="w-full py-3 text-neutral-500 text-sm hover:text-neutral-300 transition-colors">
+        Continuar sem IA (modo demo)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="fixed left-0 top-0 h-full flex flex-col py-8 bg-neutral-950 w-72 z-50">
+  <div class="px-8 mb-10">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center overflow-hidden p-1">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Ifes_Logo.svg" alt="Logo IFES" class="w-full h-full object-contain">
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold tracking-tighter text-neutral-50 font-headline">IFES - Energy IA</h2>
+        <p class="text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-bold">Mestrado em Eng. Aut</p>
+      </div>
+    </div>
+  </div>
+  <nav class="flex-1 px-4 space-y-1">
+    <a onclick="showPage('dashboard')" class="nav-item flex items-center gap-4 px-4 py-3 text-neutral-500 font-medium hover:bg-neutral-900 hover:text-neutral-100 transition-all duration-200 cursor-pointer rounded-xl" data-page="dashboard">
+      <span class="material-symbols-outlined">dashboard</span>
+      <span class="font-headline tracking-tight">Painel de Controle</span>
+    </a>
+    <a onclick="showPage('analise')" class="nav-item flex items-center gap-4 px-4 py-3 text-neutral-500 font-medium hover:bg-neutral-900 hover:text-neutral-100 transition-all duration-200 cursor-pointer rounded-xl" data-page="analise">
+      <span class="material-symbols-outlined">insights</span>
+      <span class="font-headline tracking-tight">Análise de Energia</span>
+    </a>
+    <a onclick="showPage('media-tensao')" class="nav-item flex items-center gap-4 px-4 py-3 text-neutral-500 font-medium hover:bg-neutral-900 hover:text-neutral-100 transition-all duration-200 cursor-pointer rounded-xl" data-page="media-tensao">
+      <span class="material-symbols-outlined">electric_bolt</span>
+      <span class="font-headline tracking-tight">Média Tensão</span>
+      <span class="ml-auto text-[9px] bg-tertiary/20 text-tertiary font-black px-2 py-0.5 rounded-full">MT</span>
+    </a>
+    <a onclick="showPage('analitico')" class="nav-item flex items-center gap-4 px-4 py-3 text-neutral-500 font-medium hover:bg-neutral-900 hover:text-neutral-100 transition-all duration-200 cursor-pointer rounded-xl" data-page="analitico">
+      <span class="material-symbols-outlined">analytics</span>
+      <span class="font-headline tracking-tight">Analítico</span>
+      <span class="ml-auto text-[9px] bg-secondary/20 text-secondary font-black px-2 py-0.5 rounded-full">MT</span>
+    </a>
+    <a onclick="showPage('indicador-ia')" class="nav-item flex items-center gap-4 px-4 py-3 text-neutral-500 font-medium hover:bg-neutral-900 hover:text-neutral-100 transition-all duration-200 cursor-pointer rounded-xl" data-page="indicador-ia">
+      <span class="material-symbols-outlined filled-icon">auto_awesome</span>
+      <span class="font-headline tracking-tight">Indicador IA</span>
+      <span class="ml-auto text-[9px] bg-primary/20 text-primary font-black px-2 py-0.5 rounded-full">IA</span>
+    </a>
+    <a onclick="showPage('chat')" class="nav-item flex items-center gap-4 px-4 py-3 text-neutral-500 font-medium hover:bg-neutral-900 hover:text-neutral-100 transition-all duration-200 cursor-pointer rounded-xl" data-page="chat">
+      <span class="material-symbols-outlined">auto_awesome</span>
+      <span class="font-headline tracking-tight">Assistente IA</span>
+    </a>
+    <a onclick="showPage('historico')" class="nav-item flex items-center gap-4 px-4 py-3 text-neutral-500 font-medium hover:bg-neutral-900 hover:text-neutral-100 transition-all duration-200 cursor-pointer rounded-xl" data-page="historico">
+      <span class="material-symbols-outlined">receipt_long</span>
+      <span class="font-headline tracking-tight">Histórico de Faturas</span>
+    </a>
+    <a onclick="showPage('alertas')" class="nav-item flex items-center gap-4 px-4 py-3 text-neutral-500 font-medium hover:bg-neutral-900 hover:text-neutral-100 transition-all duration-200 cursor-pointer rounded-xl" data-page="alertas">
+      <span class="material-symbols-outlined">warning</span>
+      <span class="font-headline tracking-tight">Multas &amp; Alertas</span>
+    </a>
+  </nav>
+  <div class="px-6 mt-4 space-y-3">
+    <div id="sidebarDrop" onclick="document.getElementById('mainFileInput').click()"
+      class="border border-dashed border-outline-variant/30 rounded-xl p-4 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group">
+      <span class="material-symbols-outlined text-neutral-600 group-hover:text-primary transition-colors">upload_file</span>
+      <p class="text-[10px] text-neutral-600 group-hover:text-neutral-400 transition-colors mt-1">Soltar PDF aqui</p>
+    </div>
+    <button onclick="document.getElementById('tokenModal').style.display='flex'"
+      class="w-full py-3 bg-surface-container text-neutral-500 rounded-xl text-xs font-bold border border-outline-variant/10 hover:bg-surface-bright transition-all flex items-center justify-center gap-2">
+      <span class="material-symbols-outlined text-sm">key</span> API Key
+    </button>
+  </div>
+</aside>
+
+<input type="file" id="mainFileInput" accept=".pdf" multiple style="display:none">
+
+<!-- HEADER -->
+<header class="flex items-center justify-between px-12 sticky top-0 z-40 ml-72 h-20 w-full bg-neutral-950/80 backdrop-blur-xl">
+  <div class="flex items-center gap-8 flex-1">
+    <h1 id="pageTitle" class="text-xl font-black text-neutral-50 font-headline">Painel de Controle</h1>
+    <div class="relative w-72">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">search</span>
+      <input class="w-full bg-neutral-900 border-none rounded-lg py-2 pl-10 text-sm text-neutral-300 focus:ring-1 focus:ring-primary/50 focus:outline-none" placeholder="Pesquisar faturas..." type="text"/>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <button onclick="document.getElementById('mainFileInput').click()"
+      class="flex items-center gap-2 px-4 py-2 bg-primary-container text-on-primary-container rounded-lg font-bold text-xs hover:opacity-90 active:scale-95 transition-all">
+      <span class="material-symbols-outlined text-sm">upload_file</span>
+      Importar PDF
+    </button>
+    <div class="flex items-center gap-2 pl-4 border-l border-neutral-800">
+      <div class="text-right">
+        <p class="text-xs font-bold text-neutral-200">Engenheiro Chefe</p>
+        <p class="text-[10px] text-primary">Administrador</p>
+      </div>
+      <div class="w-9 h-9 rounded-full bg-primary-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-primary-container text-sm filled-icon">person</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="ml-72">
+
+<!-- PAGE: DASHBOARD -->
+<div id="page-dashboard" class="page active p-12 space-y-10">
+  <section class="grid grid-cols-3 gap-6">
+    <div class="bg-surface-container-low p-8 rounded-xl relative overflow-hidden group">
+      <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+        <span class="material-symbols-outlined text-8xl">description</span>
+      </div>
+      <p class="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-2 label-with-tip">Contas Analisadas<span data-tip="contasAnalisadas"></span></p>
+      <h2 class="text-6xl font-bold font-headline" id="kpi-total">0</h2>
+      <div class="mt-4 flex items-center gap-2 text-secondary text-sm">
+        <span class="material-symbols-outlined text-sm">history</span>
+        <span id="kpi-period">Nenhuma ainda</span>
+      </div>
+    </div>
+    <div class="bg-surface-container-low p-8 rounded-xl relative overflow-hidden group">
+      <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+        <span class="material-symbols-outlined text-8xl">payments</span>
+      </div>
+      <p class="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-2 label-with-tip">Valor Total Pago<span data-tip="valorTotalPago"></span></p>
+      <div class="flex items-baseline gap-1">
+        <span class="text-xl font-medium text-neutral-400">R$</span>
+        <h2 class="text-5xl font-bold font-headline" id="kpi-total-val">0,00</h2>
+      </div>
+      <div class="mt-4 flex items-center gap-2 text-sm" id="kpi-val-delta">
+        <span class="material-symbols-outlined text-sm text-neutral-500">remove</span>
+        <span class="text-neutral-500">Aguardando dados</span>
+      </div>
+    </div>
+    <div class="bg-surface-container-low p-8 rounded-xl relative overflow-hidden group">
+      <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+        <span class="material-symbols-outlined text-8xl">bolt</span>
+      </div>
+      <p class="text-xs uppercase tracking-widest text-neutral-500 font-bold mb-2 label-with-tip">Consumo Médio<span data-tip="consumoMedio"></span></p>
+      <div class="flex items-baseline gap-1">
+        <h2 class="text-6xl font-bold text-primary font-headline" id="kpi-avg-kwh">—</h2>
+        <span class="text-xl font-medium text-neutral-400">kWh</span>
+      </div>
+      <div class="mt-4 flex items-center gap-2 text-sm" id="kpi-kwh-delta">
+        <span class="material-symbols-outlined text-sm text-neutral-500">remove</span>
+        <span class="text-neutral-500">Aguardando dados</span>
+      </div>
+    </div>
+  </section>
+  <section class="grid grid-cols-12 gap-6">
+    <div class="col-span-8 bg-surface-container-low p-8 rounded-xl">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h3 class="text-xl font-bold font-headline label-with-tip">Consumo Mensal (kWh)<span data-tip="consumoMensal"></span></h3>
+          <p class="text-sm text-neutral-500">Histórico por período de fatura</p>
+        </div>
+        <div class="flex gap-2">
+          <span class="px-3 py-1 bg-primary-container text-on-primary-container rounded text-[10px] font-bold uppercase tracking-tighter">kWh</span>
+          <span id="toggleValBtn" onclick="toggleChart()" class="px-3 py-1 bg-surface-container-highest rounded text-[10px] font-bold uppercase tracking-tighter cursor-pointer hover:bg-surface-bright transition-colors">R$</span>
+        </div>
+      </div>
+      <div id="barChart" class="h-56 flex items-end justify-around gap-3 px-2">
+        <div class="text-center text-neutral-600 text-sm w-full flex items-center justify-center h-full">
+          <div class="space-y-2 text-center">
+            <span class="material-symbols-outlined text-3xl text-neutral-700">bar_chart</span>
+            <p class="text-xs">Importe faturas para visualizar</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-span-4 flex flex-col gap-6">
+      <div class="bg-surface-container-high p-6 rounded-xl border-l-4 border-error">
+        <div class="flex items-start gap-4">
+          <div class="p-2 bg-error/10 rounded-lg">
+            <span class="material-symbols-outlined text-error filled-icon">warning</span>
+          </div>
+          <div class="flex-1">
+            <h4 class="font-bold text-on-surface mb-1 label-with-tip">Multas Detectadas<span data-tip="multasDetectadas"></span></h4>
+            <p class="text-3xl font-bold font-headline text-error" id="kpi-fines">0</p>
+            <p class="text-xs text-neutral-500 mt-1" id="kpi-fines-total">R$ 0,00 no período</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-surface-container-low p-6 rounded-xl">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-5 label-with-tip">Variações<span data-tip="variacoes"></span></h3>
+        <div class="space-y-5">
+          <div>
+            <div class="flex justify-between text-xs mb-2">
+              <span class="text-neutral-300 flex items-center gap-1"><span class="material-symbols-outlined text-sm">calendar_today</span> vs. Mês Anterior<span data-tip="vsMesAnterior"></span></span>
+              <span class="font-bold" id="mom-label">—</span>
+            </div>
+            <div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+              <div id="mom-bar" class="h-full rounded-full transition-all duration-700" style="width:0%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-2">
+              <span class="text-neutral-300 flex items-center gap-1"><span class="material-symbols-outlined text-sm">event_repeat</span> vs. Ano Anterior<span data-tip="vsAnoAnterior"></span></span>
+              <span class="font-bold" id="yoy-label">—</span>
+            </div>
+            <div class="w-full h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+              <div id="yoy-bar" class="h-full rounded-full transition-all duration-700" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="bg-surface-container-low p-8 rounded-xl">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-xl font-bold font-headline">Faturas Recentes</h3>
+      <button onclick="showPage('historico')" class="text-xs text-primary hover:underline">Ver todas</button>
+    </div>
+    <div id="recentBills">
+      <div class="text-center py-10 text-neutral-600">
+        <span class="material-symbols-outlined text-4xl">receipt_long</span>
+        <p class="text-sm mt-2">Nenhuma fatura importada ainda.<br>Clique em "Importar PDF" para começar.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- PAGE: ANÁLISE -->
+<div id="page-analise" class="page p-12 space-y-10">
+  <section class="flex justify-between items-end">
+    <div class="space-y-2">
+      <p class="text-primary font-medium tracking-[0.2em] uppercase text-xs">Centro de Diagnóstico</p>
+      <h2 class="text-4xl font-bold tracking-tight font-headline">Análise de Desempenho</h2>
+    </div>
+  </section>
+  <section class="grid grid-cols-12 gap-6">
+    <div class="col-span-4 bg-surface-container-high p-8 rounded-xl flex flex-col justify-between">
+      <div>
+        <div class="flex justify-between items-start">
+          <span class="material-symbols-outlined text-primary-fixed text-3xl">show_chart</span>
+          <div id="variacao-badge" class="bg-surface-container-highest px-3 py-1 rounded-full flex items-center gap-1">
+            <span class="material-symbols-outlined text-neutral-500 text-xs">remove</span>
+            <span class="text-neutral-500 text-xs font-bold">—</span>
+          </div>
+        </div>
+        <h4 class="text-on-surface-variant font-label text-xs uppercase tracking-widest mt-6 label-with-tip">Variação de Consumo<span data-tip="analiseVariacao"></span></h4>
+        <p class="display-metric text-5xl font-bold mt-2"><span id="analise-kwh">—</span><span class="text-lg font-light text-on-surface-variant ml-2">kWh</span></p>
+      </div>
+      <p class="text-xs text-on-surface-variant mt-8 leading-relaxed" id="analise-kwh-desc">Importe faturas para ver a variação.</p>
+    </div>
+    <div class="col-span-4 bg-surface-container-high p-8 rounded-xl">
+      <div class="flex justify-between items-start">
+        <span class="material-symbols-outlined text-tertiary text-3xl">warning</span>
+        <span class="text-xs font-bold text-on-surface-variant" id="analise-fatura-ref">—</span>
+      </div>
+      <h4 class="text-on-surface-variant font-label text-xs uppercase tracking-widest mt-6 label-with-tip">Multas Pagas<span data-tip="analiseMultas"></span></h4>
+      <p class="display-metric text-5xl font-bold mt-2">R$ <span id="analise-multa-total">0,00</span></p>
+      <div id="analise-multas-list" class="mt-6 space-y-2">
+        <p class="text-xs text-neutral-600">Nenhuma multa detectada.</p>
+      </div>
+    </div>
+    <div class="col-span-4 bg-surface-container-high p-8 rounded-xl">
+      <h4 class="text-on-surface-variant font-label text-xs uppercase tracking-widest label-with-tip">Linha do Tempo<span data-tip="analiseTimeline"></span></h4>
+      <div id="analise-timeline" class="mt-6 space-y-3">
+        <p class="text-xs text-neutral-600">Importe faturas para visualizar.</p>
+      </div>
+    </div>
+    <div class="col-span-12 bg-surface-container-highest p-8 rounded-xl flex items-center gap-10 relative overflow-hidden">
+      <div class="absolute -right-10 -top-10 w-60 h-60 bg-secondary/5 blur-[80px] rounded-full"></div>
+      <div class="flex-shrink-0 w-20 h-20 bg-secondary/10 flex items-center justify-center rounded-full">
+        <span class="material-symbols-outlined text-secondary text-4xl filled-icon">auto_awesome</span>
+      </div>
+      <div class="flex-1 space-y-2">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-secondary uppercase tracking-widest">Insight da IA</span>
+          <span class="px-2 py-0.5 rounded bg-secondary/20 text-secondary text-[10px] font-black uppercase">IFES</span>
+        </div>
+        <h3 class="text-xl font-bold font-headline" id="insight-title">Aguardando análise...</h3>
+        <p class="text-on-surface-variant text-sm max-w-3xl leading-relaxed" id="insight-text">Importe faturas em PDF e a IA irá gerar recomendações personalizadas de economia.</p>
+      </div>
+      <div class="flex-shrink-0">
+        <button onclick="generateInsight()"
+          class="bg-secondary text-on-secondary px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-secondary/20">
+          <span class="material-symbols-outlined text-sm">auto_fix_high</span>
+          Gerar Insight
+        </button>
+      </div>
+    </div>
+  </section>
+  <section class="bg-surface-container-low rounded-xl p-8">
+    <div class="flex justify-between items-start mb-8">
+      <div>
+        <h3 class="text-xl font-bold font-headline">Comparativo de Consumo</h3>
+        <p class="text-on-surface-variant text-sm mt-1">kWh mensal — ano atual vs. ano anterior</p>
+      </div>
+      <div class="flex gap-4">
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-primary"></span><span class="text-xs text-on-surface-variant">Ano Atual</span></div>
+        <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-outline-variant"></span><span class="text-xs text-on-surface-variant">Ano Anterior</span></div>
+      </div>
+    </div>
+    <div id="yoyChart" class="h-64 flex items-end justify-around gap-2 px-4">
+      <div class="text-center text-neutral-600 text-sm w-full flex items-center justify-center h-full">
+        <p class="text-xs">Dados comparativos aparecerão aqui</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- PAGE: MÉDIA TENSÃO -->
+<div id="page-media-tensao" class="page p-12 space-y-8">
+
+  <!-- Header -->
+  <section class="flex justify-between items-end">
+    <div class="space-y-2">
+      <div class="flex items-center gap-3">
+        <p class="text-tertiary font-bold tracking-[0.2em] uppercase text-xs">Tarifa Média Tensão — Grupo A</p>
+        <span class="text-[10px] font-black bg-tertiary/20 text-tertiary px-2 py-0.5 rounded-full">SUBGRUPO A4</span>
+      </div>
+      <h2 class="text-4xl font-bold tracking-tight font-headline">Detalhamento MT</h2>
+      <p class="text-neutral-500 text-sm">Custos segmentados, impostos, demanda e geração distribuída — <span class="text-primary/80">passe o mouse no <span class="help-tip-icon inline-flex align-middle" style="width:13px;height:13px;font-size:9px">?</span> para explicações</span></p>
+    </div>
+    <div class="flex items-center gap-3">
+      <div id="mt-bill-selector" class="bg-surface-container-low rounded-xl px-4 py-2 text-xs text-neutral-500 border border-outline-variant/20">
+        <select id="mtBillSelect" onchange="renderMTPage()" class="bg-transparent text-neutral-300 font-bold text-sm focus:outline-none cursor-pointer">
+          <option value="">— Selecione uma fatura —</option>
+        </select>
+      </div>
+      <button onclick="document.getElementById('mainFileInput').click()"
+        class="flex items-center gap-2 px-4 py-2 bg-tertiary/20 text-tertiary border border-tertiary/30 rounded-xl font-bold text-xs hover:bg-tertiary/30 transition-all">
+        <span class="material-symbols-outlined text-sm">upload_file</span>
+        Importar MT
+      </button>
+    </div>
+  </section>
+
+  <!-- Empty state -->
+  <div id="mt-empty" class="bg-surface-container-low rounded-xl p-16 text-center">
+    <div class="w-16 h-16 rounded-2xl bg-tertiary/10 flex items-center justify-center mx-auto mb-5">
+      <span class="material-symbols-outlined text-tertiary text-3xl">electric_bolt</span>
+    </div>
+    <h3 class="text-xl font-bold font-headline mb-2">Nenhuma conta de Média Tensão importada</h3>
+    <p class="text-neutral-500 text-sm max-w-md mx-auto leading-relaxed">Importe um PDF de conta de energia do Grupo A (média tensão) para ver o detalhamento completo de tarifas, impostos e demanda.</p>
+    <button onclick="document.getElementById('mainFileInput').click()"
+      class="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-tertiary/20 text-tertiary border border-tertiary/30 rounded-xl font-bold text-sm hover:bg-tertiary/30 transition-all">
+      <span class="material-symbols-outlined text-sm">upload_file</span>
+      Importar PDF de Conta MT
+    </button>
+  </div>
+
+  <!-- MT Content (shown when data exists) -->
+  <div id="mt-content" class="hidden space-y-8">
+
+    <!-- KPI strip -->
+    <div class="grid grid-cols-4 gap-4">
+      <div class="mt-card p-5">
+        <p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1 label-with-tip">Energia Ativa Total<span data-tip="energiaAtivaTotal"></span></p>
+        <p class="text-3xl font-bold font-headline text-primary" id="mt-kpi-energia-ativa">—</p>
+        <p class="text-xs text-neutral-600 mt-1">kWh no período</p>
+      </div>
+      <div class="mt-card p-5">
+        <p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1 label-with-tip">Demanda Contratada<span data-tip="demandaContratada"></span></p>
+        <p class="text-3xl font-bold font-headline text-tertiary" id="mt-kpi-demanda">—</p>
+        <p class="text-xs text-neutral-600 mt-1">kW (ponta + fponta)</p>
+      </div>
+      <div class="mt-card p-5">
+        <p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1 label-with-tip">Geração Injetada<span data-tip="geracaoInjetada"></span></p>
+        <p class="text-3xl font-bold font-headline text-secondary" id="mt-kpi-geracao">—</p>
+        <p class="text-xs text-neutral-600 mt-1">kWh injetados rede</p>
+      </div>
+      <div class="mt-card p-5 border-l-2 border-error/50">
+        <p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1 label-with-tip">Multas e Juros<span data-tip="multasJuros"></span></p>
+        <p class="text-3xl font-bold font-headline text-error" id="mt-kpi-encargos">R$ —</p>
+        <p class="text-xs text-neutral-600 mt-1">penalidades por atraso</p>
+      </div>
+    </div>
+
+    <!-- Cost breakdown + pie -->
+    <div class="grid grid-cols-12 gap-6">
+
+      <!-- Cost bars -->
+      <div class="col-span-7 mt-card p-7">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h3 class="text-lg font-bold font-headline label-with-tip">Composição dos Custos<span data-tip="composicaoCustos"></span></h3>
+            <p class="text-xs text-neutral-500 mt-1">Todos os itens da fatura traduzidos</p>
+          </div>
+          <span class="text-xs text-neutral-500" id="mt-ref-label">—</span>
+        </div>
+        <div id="mt-cost-bars" class="space-y-3">
+          <p class="text-xs text-neutral-600">Carregando...</p>
+        </div>
+      </div>
+
+      <!-- Donut -->
+      <div class="col-span-5 mt-card p-7 flex flex-col">
+        <h3 class="text-lg font-bold font-headline mb-1 label-with-tip">Distribuição<span data-tip="distribuicao"></span></h3>
+        <p class="text-xs text-neutral-500 mb-6">% de cada grupo no total da fatura</p>
+        <div class="flex-1 flex flex-col items-center justify-center">
+          <div class="relative w-48 h-48">
+            <svg viewBox="0 0 100 100" class="w-full h-full" id="mt-donut-svg">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#2a2a2a" stroke-width="12"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <p class="text-2xl font-bold font-headline" id="mt-donut-center">—</p>
+              <p class="text-[10px] text-neutral-500">total R$</p>
+            </div>
+          </div>
+          <div id="mt-legend" class="mt-6 w-full space-y-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabela de itens da fatura -->
+    <div class="mt-card overflow-hidden">
+      <div class="px-7 py-5 border-b border-outline-variant/15 flex items-center justify-between">
+        <h3 class="text-lg font-bold font-headline label-with-tip">Itens Detalhados da Fatura<span data-tip="itensDetalhados"></span></h3>
+        <span class="text-[10px] bg-surface-container-highest px-3 py-1 rounded-full text-neutral-500 font-bold">MEDIÇÃO + TARIFAÇÃO</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full mt-table">
+          <thead>
+            <tr class="bg-surface-container-high/30">
+              <th class="text-left"><span class="label-with-tip">Item da Conta<span data-tip="colItemConta" data-tip-class="tip-below"></span></span></th>
+              <th class="text-left"><span class="label-with-tip">Descrição ao Usuário<span data-tip="colDescricao" data-tip-class="tip-below"></span></span></th>
+              <th class="text-right"><span class="label-with-tip justify-end">Consumo / Qtd<span data-tip="colConsumo" data-tip-class="tip-below tip-left"></span></span></th>
+              <th class="text-right"><span class="label-with-tip justify-end">Unidade<span data-tip="colUnidade" data-tip-class="tip-below tip-left"></span></span></th>
+              <th class="text-right"><span class="label-with-tip justify-end">Tarifa (R$)<span data-tip="colTarifa" data-tip-class="tip-below tip-left"></span></span></th>
+              <th class="text-right"><span class="label-with-tip justify-end">Valor (R$)<span data-tip="colValor" data-tip-class="tip-below tip-left"></span></span></th>
+            </tr>
+          </thead>
+          <tbody id="mt-items-tbody">
+            <tr><td colspan="6" class="text-center text-neutral-600 py-8 text-sm">Nenhum dado carregado</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Impostos e encargos -->
+    <div class="grid grid-cols-2 gap-6">
+      <div class="mt-card p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-9 h-9 bg-error/10 rounded-lg flex items-center justify-center">
+            <span class="material-symbols-outlined text-error text-sm filled-icon">account_balance</span>
+          </div>
+          <div>
+            <h3 class="text-base font-bold font-headline label-with-tip">Impostos e Encargos<span data-tip="impostosEncargos"></span></h3>
+            <p class="text-xs text-neutral-500">Valores cobrados / retidos</p>
+          </div>
+        </div>
+        <div id="mt-taxes-list" class="space-y-3">
+          <p class="text-xs text-neutral-600">Carregando...</p>
+        </div>
+      </div>
+
+      <!-- Geração distribuída -->
+      <div class="mt-card p-7">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="w-9 h-9 bg-secondary/10 rounded-lg flex items-center justify-center">
+            <span class="material-symbols-outlined text-secondary text-sm filled-icon">solar_power</span>
+          </div>
+          <div>
+            <h3 class="text-base font-bold font-headline label-with-tip">Micro/Minigeração Distribuída<span data-tip="microGeracao"></span></h3>
+            <p class="text-xs text-neutral-500">Injeção e saldo de energia</p>
+          </div>
+        </div>
+        <div id="mt-gd-list" class="space-y-3">
+          <p class="text-xs text-neutral-600">Dados de geração distribuída aparecerão aqui.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparativo com faturas anteriores -->
+    <div class="mt-card p-7">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h3 class="text-lg font-bold font-headline label-with-tip">Comparativo de Faturas MT<span data-tip="comparativoMT"></span></h3>
+          <p class="text-xs text-neutral-500 mt-1">Energia ativa ponta + fora ponta (kWh) por período</p>
+        </div>
+        <div class="flex gap-4 text-xs">
+          <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-primary/80 inline-block"></span> Energia Ativa</div>
+          <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-error/60 inline-block"></span> Energia Reativa</div>
+          <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-secondary/60 inline-block"></span> Injetada</div>
+        </div>
+      </div>
+      <div id="mt-compare-chart" class="h-56 flex items-end justify-around gap-2 px-2">
+        <div class="text-center text-neutral-600 text-sm w-full flex items-center justify-center h-full">
+          <p class="text-xs">Importe múltiplas faturas para comparar</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end mt-content -->
+</div><!-- end page-media-tensao -->
+
+<!-- PAGE: ANALÍTICO — Otimização de Demanda -->
+<div id="page-analitico" class="page p-12 space-y-8">
+
+  <section class="flex justify-between items-start gap-6 flex-wrap">
+    <div class="space-y-2 max-w-3xl">
+      <p class="text-secondary font-bold tracking-[0.2em] uppercase text-xs">Análises / Otimização de Demanda</p>
+      <h2 class="text-4xl font-bold tracking-tight font-headline">Otimização de Demanda</h2>
+      <p class="text-neutral-500 text-sm leading-relaxed">Simulador determinístico baseado em todas as faturas carregadas. Cenários estatísticos (P95/P99) e ótimo de custo total considerando o trade-off de ultrapassagens ocasionais.</p>
+    </div>
+    <button id="btnExportPdf" onclick="exportDemandPDF()" disabled
+      class="flex items-center gap-2 px-5 py-3 bg-surface-container-high text-neutral-500 border border-outline-variant/30 rounded-xl font-bold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:bg-secondary/10 hover:enabled:text-secondary hover:enabled:border-secondary/40">
+      <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+      Extrair relatório em PDF
+    </button>
+  </section>
+
+  <!-- Parâmetros -->
+  <div class="anal-card p-8 space-y-6">
+    <div>
+      <h3 class="text-lg font-bold font-headline">Parâmetros da simulação</h3>
+      <p class="text-xs text-neutral-500 mt-1">Aceita vírgula decimal (ex.: 0,05). Campos em branco não são considerados.</p>
+    </div>
+    <div class="bg-surface-container-high/50 rounded-lg px-4 py-3 text-sm text-neutral-400">
+      Fonte de dados: <strong id="anal-fonte-dados" class="text-neutral-200">0 fatura(s) carregada(s)</strong> via Upload. Todas serão usadas na simulação.
+    </div>
+    <div class="grid grid-cols-2 gap-6">
+      <div>
+        <label class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold block mb-2">Modalidade tarifária</label>
+        <select id="anal-modalidade" class="w-full bg-surface-container-high border border-outline-variant/30 rounded-lg px-4 py-2.5 text-sm text-neutral-200 focus:outline-none focus:ring-1 focus:ring-secondary/40">
+          <option value="verde">Horária Verde</option>
+          <option value="azul">Horária Azul</option>
+          <option value="convencional">Convencional</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold block mb-2">Meses históricos</label>
+        <select id="anal-meses" class="w-full bg-surface-container-high border border-outline-variant/30 rounded-lg px-4 py-2.5 text-sm text-neutral-200 focus:outline-none focus:ring-1 focus:ring-secondary/40">
+          <option value="all">Todos disponíveis</option>
+          <option value="12">Últimos 12 meses</option>
+          <option value="24">Últimos 24 meses</option>
+        </select>
+      </div>
+    </div>
+    <p class="text-xs text-neutral-500 leading-relaxed bg-surface-container-high/30 rounded-lg px-4 py-3">
+      Demanda contratada, tarifas, multiplicador de ultrapassagem, tolerância, impostos e margem técnica são obtidos automaticamente das faturas carregadas. Valores padrão (multiplicador 2×, tolerância 5%, margem 3%) são aplicados quando não disponíveis na fatura.
+    </p>
+    <div class="grid grid-cols-2 gap-6">
+      <div>
+        <label class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold block mb-2">Máx. meses c/ ultrapassagem (cenário agressivo)</label>
+        <input id="anal-max-over" type="number" value="2" min="0" max="12"
+          class="w-full bg-surface-container-high border border-outline-variant/30 rounded-lg px-4 py-2.5 text-sm text-neutral-200 focus:outline-none focus:ring-1 focus:ring-secondary/40"/>
+      </div>
+      <div>
+        <label class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold block mb-2">Passo de varredura (kW)</label>
+        <select id="anal-passo" class="w-full bg-surface-container-high border border-outline-variant/30 rounded-lg px-4 py-2.5 text-sm text-neutral-200 focus:outline-none focus:ring-1 focus:ring-secondary/40">
+          <option value="1">1 kW</option>
+          <option value="5">5 kW</option>
+          <option value="10">10 kW</option>
+        </select>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-6">
+      <div>
+        <label class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold block mb-2">Possui sistema fotovoltaico?</label>
+        <div class="flex items-center gap-3 mt-1">
+          <div id="anal-toggle-fv" class="anal-toggle" onclick="toggleAnalSwitch('anal-toggle-fv')" role="switch" aria-checked="false"></div>
+          <span class="text-xs text-neutral-500">Permite ignorar dados anteriores à instalação.</span>
+        </div>
+      </div>
+      <div>
+        <label class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold block mb-2">Aceitar análise preliminar (&lt; 12 meses)</label>
+        <div class="flex items-center gap-3 mt-1">
+          <div id="anal-toggle-prelim" class="anal-toggle" onclick="toggleAnalSwitch('anal-toggle-prelim')" role="switch" aria-checked="false"></div>
+          <span class="text-xs text-neutral-500">Executar mesmo com histórico curto.</span>
+        </div>
+      </div>
+    </div>
+    <div class="flex justify-end pt-2">
+      <button id="btnRunSim" onclick="runDemandSimulation()"
+        class="px-8 py-3 bg-secondary text-on-secondary rounded-xl font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all flex items-center gap-2 shadow-lg shadow-secondary/20">
+        <span class="material-symbols-outlined text-sm filled-icon">play_arrow</span>
+        Executar simulação
+      </button>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div id="anal-empty" class="anal-card p-16 text-center">
+    <span class="material-symbols-outlined text-neutral-600 text-5xl mb-4 block">analytics</span>
+    <h3 class="text-xl font-bold font-headline mb-2">Nenhuma simulação executada</h3>
+    <p class="text-neutral-500 text-sm max-w-lg mx-auto">Importe faturas de média tensão (Grupo A) com dados de demanda e clique em <strong class="text-neutral-300">Executar simulação</strong>.</p>
+  </div>
+
+  <!-- Resultados -->
+  <div id="anal-results" class="hidden space-y-8">
+
+    <div class="bg-surface-container-high/60 border border-outline-variant/20 rounded-xl px-5 py-4 flex items-start gap-3">
+      <span class="material-symbols-outlined text-primary text-xl shrink-0">info</span>
+      <p class="text-xs text-neutral-400 leading-relaxed">
+        <strong class="text-neutral-300">Simulação técnica</strong> — não constitui recomendação contratual. Os valores devem ser validados com a distribuidora antes de qualquer pedido formal de alteração de demanda. Tarifas, regras de ultrapassagem e prazos podem variar.
+      </p>
+    </div>
+
+    <!-- Indicador IA — recomendação principal -->
+    <div id="ia-indicador-box" class="ia-indicador-box rounded-xl p-8 space-y-5">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center">
+            <span class="material-symbols-outlined text-secondary filled-icon text-2xl">psychology</span>
+          </div>
+          <div>
+            <p class="text-[10px] uppercase tracking-widest text-secondary font-black">IFES AI — Indicador de Demanda</p>
+            <h3 class="text-xl font-bold font-headline">Recomendação baseada no histórico</h3>
+          </div>
+        </div>
+        <button onclick="showPage('indicador-ia')" class="text-xs text-secondary hover:underline font-bold">Ver aba completa →</button>
+      </div>
+      <div class="flex flex-wrap items-end gap-6">
+        <div>
+          <p class="text-xs text-neutral-400 mb-1">Demanda contratada sugerida</p>
+          <p class="ia-indicador-kw font-bold" id="ia-box-kw">—</p>
+        </div>
+        <div class="flex-1 min-w-[200px]">
+          <p id="ia-box-text" class="text-sm text-neutral-300 leading-relaxed">Execute a simulação para gerar a avaliação da IA.</p>
+        </div>
+      </div>
+      <div class="grid grid-cols-4 gap-3 pt-2 border-t border-secondary/20">
+        <div class="text-center"><p class="text-[10px] text-neutral-500 uppercase font-bold">Pico máx.</p><p class="text-lg font-bold text-on-surface" id="ia-box-max">—</p></div>
+        <div class="text-center"><p class="text-[10px] text-neutral-500 uppercase font-bold">Menor medida</p><p class="text-lg font-bold text-on-surface" id="ia-box-min">—</p></div>
+        <div class="text-center"><p class="text-[10px] text-neutral-500 uppercase font-bold">Contratada hoje</p><p class="text-lg font-bold text-error" id="ia-box-contr">—</p></div>
+        <div class="text-center"><p class="text-[10px] text-neutral-500 uppercase font-bold">Limite s/ multa (10%)</p><p class="text-lg font-bold text-secondary" id="ia-box-limite">—</p></div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-4 gap-4" id="anal-kpi-grid">
+      <div class="anal-kpi"><p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1">Demanda contratada</p><p class="text-2xl font-bold font-headline" id="kpi-dem-contr">—</p></div>
+      <div class="anal-kpi"><p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1">Demanda recomendada (IA)</p><p class="text-2xl font-bold font-headline text-secondary" id="kpi-dem-rec">—</p></div>
+      <div class="anal-kpi"><p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1">Máx. histórico medido</p><p class="text-2xl font-bold font-headline" id="kpi-dem-max">—</p></div>
+      <div class="anal-kpi"><p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1">Meses c/ ultrapassagem</p><p class="text-2xl font-bold font-headline" id="kpi-over-months">—</p></div>
+      <div class="anal-kpi"><p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1">Custo no período</p><p class="text-2xl font-bold font-headline" id="kpi-custo-periodo">—</p><p class="text-[10px] text-neutral-600 mt-1" id="kpi-custo-periodo-sub">—</p></div>
+      <div class="anal-kpi"><p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1">Custo anualizado atual</p><p class="text-2xl font-bold font-headline" id="kpi-custo-atual">—</p></div>
+      <div class="anal-kpi"><p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1">Custo anualizado otimizado</p><p class="text-2xl font-bold font-headline text-secondary" id="kpi-custo-otim">—</p></div>
+      <div class="anal-kpi"><p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1">Economia anualizada</p><p class="text-2xl font-bold font-headline text-secondary" id="kpi-economia">—</p></div>
+      <div class="anal-kpi"><p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1">Meses usados</p><p class="text-2xl font-bold font-headline" id="kpi-meses-usados">—</p></div>
+      <div class="anal-kpi"><p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1">Período analisado</p><p class="text-lg font-bold font-headline" id="kpi-periodo">—</p></div>
+      <div class="anal-kpi"><p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1">Origem dos dados</p><p class="text-lg font-bold font-headline" id="kpi-origem">pdf</p><p class="text-[10px] text-neutral-600 mt-1" id="kpi-origem-sub">—</p></div>
+      <div class="anal-kpi"><p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1">Confiança OCR média</p><p class="text-2xl font-bold font-headline" id="kpi-ocr">—</p></div>
+    </div>
+
+    <!-- Cenários -->
+    <div class="grid grid-cols-4 gap-4" id="anal-scenarios">
+      <div class="anal-scenario" data-scenario="conservador">
+        <div class="flex justify-between items-start mb-3"><h4 class="font-bold text-sm">Conservador</h4><span class="anal-scenario-badge" id="badge-cons">0 acima</span></div>
+        <p class="text-xs text-neutral-500 leading-relaxed mb-4">Cobre o pico máximo (P99 + margem técnica), zero ultrapassagens.</p>
+        <p class="text-3xl font-bold font-headline mb-3" id="val-cons">—</p>
+        <p class="text-[10px] text-neutral-500" id="foot-cons">—</p>
+      </div>
+      <div class="anal-scenario" data-scenario="estatistico">
+        <div class="flex justify-between items-start mb-3"><h4 class="font-bold text-sm">Estatístico (P95)</h4><span class="anal-scenario-badge" id="badge-p95">0 acima</span></div>
+        <p class="text-xs text-neutral-500 leading-relaxed mb-4">Demanda contratada ≈ P95. Cobre 95% dos meses; aceita picos ocasionais.</p>
+        <p class="text-3xl font-bold font-headline mb-3" id="val-p95">—</p>
+        <p class="text-[10px] text-neutral-500" id="foot-p95">—</p>
+      </div>
+      <div class="anal-scenario active" data-scenario="economico">
+        <div class="flex justify-between items-start mb-3"><h4 class="font-bold text-sm">Indicador IA (recomendado)</h4><span class="anal-scenario-badge warn" id="badge-opt">—</span></div>
+        <p class="text-xs text-neutral-500 leading-relaxed mb-4">Demanda sugerida pela IA com base no pico histórico + tolerância de 10% sem ultrapassagem.</p>
+        <p class="text-3xl font-bold font-headline text-secondary mb-3" id="val-opt">—</p>
+        <p class="text-[10px] text-neutral-500" id="foot-opt">—</p>
+      </div>
+      <div class="anal-scenario" data-scenario="agressivo">
+        <div class="flex justify-between items-start mb-3"><h4 class="font-bold text-sm">Agressivo</h4><span class="badge-agress anal-scenario-badge" id="badge-agr">—</span></div>
+        <p class="text-xs text-neutral-500 leading-relaxed mb-4">Maior economia aceitando até N mês(es) acima do contratado.</p>
+        <p class="text-3xl font-bold font-headline mb-3" id="val-agr">—</p>
+        <p class="text-[10px] text-neutral-500" id="foot-agr">—</p>
+      </div>
+    </div>
+
+    <!-- Gráficos analíticos -->
+    <div class="anal-card p-7 space-y-4">
+      <div>
+        <h3 class="text-lg font-bold font-headline">Demanda contratada x máxima histórica por competência</h3>
+        <p class="text-xs text-neutral-500 mt-1" id="chart-bar-subtitle">Linhas de referência: P95, P99 e demanda ótima recomendada.</p>
+      </div>
+      <div class="h-72"><canvas id="chartDemandaBar"></canvas></div>
+    </div>
+
+    <div class="anal-card p-7 space-y-4">
+      <div>
+        <h3 class="text-lg font-bold font-headline">Demanda medida x contratada x indicador IA</h3>
+        <p class="text-xs text-neutral-500 mt-1">Série temporal de potência demandada (kW).</p>
+      </div>
+      <div class="h-72"><canvas id="chartDemandaLine"></canvas></div>
+    </div>
+
+    <!-- Relatório de Otimização (seção exportável) -->
+    <div id="anal-relatorio-wrap" class="anal-card p-0 overflow-hidden border border-secondary/30">
+      <div class="bg-secondary/10 px-8 py-5 border-b border-secondary/20 flex flex-wrap justify-between items-center gap-4">
+        <div>
+          <p class="text-[10px] uppercase tracking-widest text-secondary font-bold mb-1">Documento técnico</p>
+          <h3 class="text-xl font-bold font-headline">Relatório de Otimização</h3>
+          <p class="text-xs text-neutral-500 mt-1">Laudo técnico, economia esperada, previsão de demanda e gráfico — incluído no PDF exportado.</p>
+        </div>
+        <span class="text-[10px] bg-secondary/20 text-secondary px-3 py-1.5 rounded-full font-black uppercase tracking-wider">Exportável em PDF</span>
+      </div>
+      <div id="anal-relatorio-otimizacao" class="anal-relatorio-doc p-8 space-y-8">
+
+        <div>
+          <h4 class="text-base font-bold mb-3 text-center">Laudo Técnico da Otimização</h4>
+          <p id="laudo-text" class="text-sm leading-relaxed text-justify text-gray-700">—</p>
+        </div>
+
+        <div>
+          <h4 class="text-base font-bold mb-3 text-center">Economia Esperada</h4>
+          <table class="doc-table">
+            <thead>
+              <tr><th>Denominação</th><th class="num">Atual¹</th><th class="num">Proposta²</th></tr>
+            </thead>
+            <tbody id="economia-tbody"></tbody>
+          </table>
+          <div id="economia-footnotes" class="doc-footnote mt-3 space-y-1"></div>
+        </div>
+
+        <div>
+          <h4 class="text-base font-bold mb-3 text-center">Previsão de demanda</h4>
+          <table class="doc-table mb-6">
+            <thead>
+              <tr><th>Competência</th><th class="num">Medida (kW)</th><th class="num">Contratada (kW)</th><th class="num">Sugerida (kW)</th></tr>
+            </thead>
+            <tbody id="previsao-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="chart-box">
+          <h4 class="text-base font-bold mb-1 text-center uppercase tracking-wide">Gráfico de Demanda</h4>
+          <p class="text-[11px] text-gray-500 text-center mb-4">Demanda Projetada · Demanda Sugerida Ótima · Demanda Contratada</p>
+          <div class="h-80"><canvas id="chartDemandaRelatorio"></canvas></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div><!-- end page-analitico -->
+
+<!-- PAGE: INDICADOR IA -->
+<div id="page-indicador-ia" class="page p-12 space-y-8">
+
+  <section class="flex justify-between items-start gap-6 flex-wrap">
+    <div class="space-y-2 max-w-3xl">
+      <p class="text-primary font-bold tracking-[0.2em] uppercase text-xs">IFES AI · Demanda Contratada</p>
+      <h2 class="text-4xl font-bold tracking-tight font-headline">Indicador IA</h2>
+      <p class="text-neutral-500 text-sm leading-relaxed">Avaliação inteligente da demanda contratada com base no histórico real de uso — pico, mínimo, contrato atual e margem de 10% sem multa de ultrapassagem.</p>
+    </div>
+    <button id="btnExportPdfIA" onclick="exportDemandPDF()" disabled
+      class="flex items-center gap-2 px-5 py-3 bg-surface-container-high text-neutral-500 border border-outline-variant/30 rounded-xl font-bold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:enabled:bg-secondary/10 hover:enabled:text-secondary hover:enabled:border-secondary/40">
+      <span class="material-symbols-outlined text-sm">picture_as_pdf</span>
+      Exportar PDF
+    </button>
+  </section>
+
+  <div id="ia-page-empty" class="anal-card p-16 text-center">
+    <span class="material-symbols-outlined text-neutral-600 text-5xl mb-4 block">auto_awesome</span>
+    <h3 class="text-xl font-bold font-headline mb-2">Nenhuma recomendação disponível</h3>
+    <p class="text-neutral-500 text-sm max-w-lg mx-auto mb-6">Importe faturas MT, vá em <strong class="text-neutral-300">Analítico</strong> e execute a simulação. A IA calculará a demanda ideal automaticamente.</p>
+    <button onclick="showPage('analitico')" class="px-6 py-3 bg-secondary text-on-secondary rounded-xl font-bold text-sm">Ir para Analítico</button>
+  </div>
+
+  <div id="ia-page-content" class="hidden space-y-8">
+    <div class="ia-indicador-box rounded-xl p-10 space-y-6">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-secondary/20 flex items-center justify-center">
+          <span class="material-symbols-outlined text-secondary filled-icon text-3xl">psychology</span>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-widest text-secondary font-black">Parecer IFES AI</p>
+          <h3 class="text-2xl font-bold font-headline">Eu indico, baseado neste histórico de uso:</h3>
+        </div>
+      </div>
+      <div class="text-center py-4">
+        <p class="text-sm text-neutral-400 mb-2">Demanda contratada deveria ficar em</p>
+        <p class="text-7xl font-bold font-headline text-secondary" id="ia-page-kw">—</p>
+      </div>
+      <div id="ia-page-narrative" class="text-base text-neutral-200 leading-relaxed space-y-4 bg-neutral-950/40 rounded-xl p-6 border border-secondary/20"></div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-6">
+      <div class="anal-card p-6 space-y-4">
+        <h4 class="font-bold font-headline">Comparativo de demanda (kW)</h4>
+        <div class="space-y-3">
+          <div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="text-neutral-500 text-sm">Pico máximo medido</span><span class="font-bold" id="ia-page-max">—</span></div>
+          <div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="text-neutral-500 text-sm">Menor demanda medida</span><span class="font-bold" id="ia-page-min">—</span></div>
+          <div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="text-neutral-500 text-sm">Contratada hoje</span><span class="font-bold text-error" id="ia-page-contr">—</span></div>
+          <div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="text-neutral-500 text-sm">Excesso contratado (pagando a mais)</span><span class="font-bold text-error" id="ia-page-excesso">—</span></div>
+          <div class="flex justify-between items-center py-2 border-b border-outline-variant/20"><span class="text-neutral-500 text-sm">Limite sem multa (+10%)</span><span class="font-bold text-secondary" id="ia-page-limite">—</span></div>
+          <div class="flex justify-between items-center py-2"><span class="text-neutral-500 text-sm">Economia anual estimada</span><span class="font-bold text-secondary" id="ia-page-economia">—</span></div>
+        </div>
+      </div>
+      <div class="anal-card p-6 space-y-4">
+        <h4 class="font-bold font-headline">Por que esta demanda?</h4>
+        <div id="ia-page-rationale" class="text-sm text-neutral-400 leading-relaxed space-y-3"></div>
+        <button id="btnRegenIA" onclick="regenerateIANarrative()" class="text-xs text-primary hover:underline font-bold flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">refresh</span> Regenerar texto com Gemini
+        </button>
+      </div>
+    </div>
+
+    <div class="anal-card p-7">
+      <h4 class="font-bold font-headline mb-4">Demanda medida vs contratada vs indicador IA</h4>
+      <div class="h-72"><canvas id="chartIndicadorIA"></canvas></div>
+    </div>
+  </div>
+</div><!-- end page-indicador-ia -->
+
+<!-- PAGE: CHAT -->
+<div id="page-chat" class="page" style="height:calc(100vh - 80px);display:none;flex-direction:column;">
+  <div class="grid grid-cols-12 h-full">
+    <section class="col-span-8 flex flex-col border-r border-outline-variant/10 h-full">
+      <div class="p-6 border-b border-outline-variant/10 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-surface-container-highest flex items-center justify-center">
+          <span class="material-symbols-outlined text-secondary filled-icon text-sm">auto_awesome</span>
+        </div>
+        <div>
+          <p class="text-sm font-bold text-on-surface">IFES AI</p>
+          <div class="flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-secondary pulse-dot"></span>
+            <span class="text-[10px] text-neutral-500">Powered by Ralf, Brenda, Patrick</span>
+          </div>
+        </div>
+        <div class="ml-auto">
+          <button onclick="clearChat()" class="text-xs text-neutral-600 hover:text-neutral-400 transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">refresh</span> Limpar
+          </button>
+        </div>
+      </div>
+      <div id="chatMessages" class="flex-1 overflow-y-auto p-6 space-y-6">
+        <div class="flex gap-4 items-start max-w-[85%] msg-enter">
+          <div class="w-9 h-9 rounded-lg bg-surface-container-highest flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-secondary filled-icon text-sm">auto_awesome</span>
+          </div>
+          <div class="bg-surface-container-low p-5 rounded-xl rounded-tl-none">
+            <p class="text-on-surface text-sm leading-relaxed">Olá! Sou o <strong>IFES AI</strong>, seu assistente de análise de energia. Posso analisar suas faturas de luz, identificar padrões de consumo, detectar cobranças indevidas e sugerir economias. Envie um PDF de conta de energia ou me faça uma pergunta!</p>
+          </div>
+        </div>
+      </div>
+      <div id="typingIndicator" class="hidden px-6 py-3">
+        <div class="flex gap-4 items-start max-w-[85%]">
+          <div class="w-9 h-9 rounded-lg bg-surface-container-highest flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-secondary filled-icon text-sm">auto_awesome</span>
+          </div>
+          <div class="bg-surface-container-low px-5 py-4 rounded-xl rounded-tl-none flex items-center gap-1.5">
+            <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 border-t border-outline-variant/10">
+        <div class="bg-surface-container-high/60 backdrop-blur-xl rounded-2xl p-3 border border-outline-variant/10">
+          <div class="flex items-center gap-3">
+            <button onclick="document.getElementById('chatFileInput').click()"
+              class="w-9 h-9 flex items-center justify-center text-neutral-400 hover:bg-neutral-800 rounded-lg transition-colors shrink-0">
+              <span class="material-symbols-outlined text-sm">attach_file</span>
+            </button>
+            <input type="file" id="chatFileInput" accept=".pdf" style="display:none">
+            <input id="chatInput" type="text"
+              class="flex-1 bg-transparent border-none focus:ring-0 text-on-surface placeholder:text-neutral-500 text-sm focus:outline-none"
+              placeholder="Pergunte sobre sua conta de energia..."/>
+            <button onclick="sendChat()"
+              class="bg-primary-container text-on-primary-container px-5 py-2 rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all flex items-center gap-2 shrink-0">
+              <span>Enviar</span>
+              <span class="material-symbols-outlined text-sm">send</span>
+            </button>
+          </div>
+        </div>
+        <div class="flex gap-2 mt-3 flex-wrap">
+          <button onclick="quickPrompt('Qual mês tive maior consumo?')" class="text-[10px] px-3 py-1.5 bg-surface-container rounded-full text-neutral-500 hover:text-neutral-300 hover:bg-surface-container-high transition-all">Maior consumo?</button>
+          <button onclick="quickPrompt('Tive alguma multa nas faturas?')" class="text-[10px] px-3 py-1.5 bg-surface-container rounded-full text-neutral-500 hover:text-neutral-300 hover:bg-surface-container-high transition-all">Verificar multas</button>
+          <button onclick="quickPrompt('Como posso reduzir minha conta de energia?')" class="text-[10px] px-3 py-1.5 bg-surface-container rounded-full text-neutral-500 hover:text-neutral-300 hover:bg-surface-container-high transition-all">Dicas de economia</button>
+          <button onclick="quickPrompt('Explique minha demanda contratada na média tensão')" class="text-[10px] px-3 py-1.5 bg-surface-container rounded-full text-neutral-500 hover:text-neutral-300 hover:bg-surface-container-high transition-all">Demanda MT</button>
+        </div>
+      </div>
+    </section>
+    <aside class="col-span-4 p-6 space-y-5 overflow-y-auto">
+      <div class="bg-surface-container-low rounded-xl overflow-hidden">
+        <div class="p-5 bg-surface-container-high/30 border-b border-outline-variant/10">
+          <h2 class="text-xs font-bold uppercase tracking-[0.1em] text-neutral-500">Faturas Carregadas</h2>
+        </div>
+        <div id="chatBillList" class="p-4 space-y-2">
+          <p class="text-xs text-neutral-600 py-2 text-center">Nenhuma fatura ainda</p>
+        </div>
+      </div>
+      <div class="bg-surface-container-low rounded-xl p-5">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-neutral-500 mb-4">Resumo Rápido</h3>
+        <div class="space-y-3" id="chatSummary">
+          <p class="text-xs text-neutral-600">Importe faturas para ver o resumo.</p>
+        </div>
+      </div>
+      <div class="p-5 bg-surface-container-high/20 rounded-xl border border-outline-variant/10">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary pulse-dot"></span>
+          <span class="text-xs font-bold uppercase tracking-widest text-neutral-500">Sistema</span>
+        </div>
+        <div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+          <div class="h-full w-[94%] bg-secondary rounded-full shadow-[0_0_10px_#4ae183]"></div>
+        </div>
+        <p class="text-[10px] text-neutral-600 mt-2">API: <span id="apiStatus" class="text-neutral-500">Não configurada</span></p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- PAGE: HISTÓRICO -->
+<div id="page-historico" class="page p-12 space-y-8">
+  <section class="flex justify-between items-end">
+    <div class="space-y-1">
+      <p class="text-secondary font-bold tracking-[0.2em] text-[10px] uppercase">Registro Financeiro</p>
+      <h2 class="text-4xl font-headline font-bold text-on-surface tracking-tight">Histórico de Faturas</h2>
+    </div>
+    <button onclick="exportCSV()" class="flex items-center gap-2 px-5 py-2.5 bg-primary-container text-on-primary-container rounded-xl font-bold hover:opacity-90 transition-all text-sm">
+      <span class="material-symbols-outlined text-sm">file_download</span>
+      Exportar CSV
+    </button>
+  </section>
+  <div class="bg-surface-container-low rounded-xl overflow-hidden shadow-2xl shadow-black/40">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-surface-container-high/50">
+          <tr>
+            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-on-surface-variant"><span class="label-with-tip">Período<span data-tip="histPeriodo" data-tip-class="tip-below"></span></span></th>
+            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-on-surface-variant"><span class="label-with-tip">Consumo<span data-tip="histConsumo" data-tip-class="tip-below"></span></span></th>
+            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-on-surface-variant"><span class="label-with-tip">vs. Mês Ant.<span data-tip="vsMesAnterior" data-tip-class="tip-below"></span></span></th>
+            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-on-surface-variant"><span class="label-with-tip">vs. Ano Ant.<span data-tip="vsAnoAnterior" data-tip-class="tip-below"></span></span></th>
+            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-on-surface-variant text-right"><span class="label-with-tip justify-end">Valor (R$)<span data-tip="histValor" data-tip-class="tip-below tip-left"></span></span></th>
+            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-on-surface-variant"><span class="label-with-tip">Multa<span data-tip="multasDetectadas" data-tip-class="tip-below"></span></span></th>
+            <th class="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-on-surface-variant"><span class="label-with-tip">Bandeira<span data-tip="histBandeira" data-tip-class="tip-below"></span></span></th>
+          </tr>
+        </thead>
+        <tbody id="historicoBody" class="divide-y divide-outline-variant/10">
+          <tr>
+            <td colspan="7" class="px-8 py-12 text-center text-neutral-600 text-sm">
+              <span class="material-symbols-outlined text-3xl block mb-2">receipt_long</span>
+              Importe faturas em PDF para construir seu histórico
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE: ALERTAS -->
+<div id="page-alertas" class="page p-12 space-y-8">
+  <section>
+    <p class="text-error font-bold tracking-[0.2em] text-[10px] uppercase mb-2">Central de Atenção</p>
+    <h2 class="text-4xl font-headline font-bold">Multas &amp; Alertas</h2>
+  </section>
+  <div id="alertsContent">
+    <div class="bg-surface-container-low rounded-xl p-12 text-center text-neutral-600">
+      <span class="material-symbols-outlined text-4xl block mb-3">check_circle</span>
+      <p class="text-sm">Nenhum alerta no momento. Importe faturas para monitorar multas e irregularidades.</p>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-6 right-6 z-100 hidden">
+  <div class="bg-surface-container-high border border-outline-variant/20 rounded-xl px-5 py-3 flex items-center gap-3 shadow-2xl">
+    <div class="w-4 h-4 rounded-full border-2 border-primary border-t-transparent spinner"></div>
+    <span id="toastMsg" class="text-sm text-on-surface">Processando...</span>
+  </div>
+</div>
+
+<script>
+// ═══════════════ STATE
+const state = {
+  bills: [],
+  geminiKey: localStorage.getItem('luminous_gemini_key') || '',
+  chatHistory: [],
+  showingKwh: true,
+  demandSimResult: null,
+  analiticoCharts: { bar: null, line: null, relatorio: null, indicador: null }
+};
+
+// ═══════════════ GLOSSÁRIO — explicações para usuário leigo (?)
+const GLOSSARY = {
+  // Painel
+  contasAnalisadas: 'Quantas faturas de energia você já importou neste sistema. Cada PDF de conta conta como uma.',
+  valorTotalPago: 'Soma de tudo que você pagou nas faturas importadas. É o total em reais, não a média mensal.',
+  consumoMedio: 'Média de quantos kWh (quilowatt-hora) você consumiu por mês. kWh mede a quantidade de energia usada — quanto maior, mais eletricidade gastou.',
+  multasDetectadas: 'Faturas que tinham multa ou juros por pagamento em atraso. Evite pagar depois do vencimento para não pagar a mais.',
+  variacoes: 'Compara seu consumo atual com meses anteriores para ver se você está gastando mais ou menos energia.',
+  vsMesAnterior: 'Diferença em relação à fatura do mês passado. Vermelho = consumiu mais. Verde = consumiu menos.',
+  vsAnoAnterior: 'Diferença em relação ao mesmo mês do ano passado (se a conta informar esse dado).',
+  consumoMensal: 'Gráfico de barras mostrando quanto você consumiu (kWh) ou pagou (R$) em cada mês.',
+
+  // Média Tensão — KPIs
+  energiaAtivaTotal: 'Energia elétrica que você realmente consumiu no mês, medida em kWh. É o "gasto" principal da conta — luz, máquinas, ar-condicionado etc.',
+  demandaContratada: 'Potência máxima (kW) que sua instalação registrou ou contratou. Em média tensão, você paga não só pelo consumo, mas também pela "capacidade" usada nos horários de pico.',
+  geracaoInjetada: 'Energia que você gerou (ex.: placas solares) e devolveu para a rede elétrica. Não é gasto — é crédito que abate sua conta.',
+  multasJuros: 'Valores extras cobrados porque a fatura anterior foi paga depois do vencimento. Dá para evitar pagando em dia.',
+
+  // MT — seções
+  composicaoCustos: 'Detalha quanto cada tipo de cobrança representa na fatura: energia, demanda, impostos, geração solar etc.',
+  distribuicao: 'Gráfico circular mostrando a fatia percentual de cada grupo de custo no total da fatura.',
+  itensDetalhados: 'Lista linha a linha de tudo que aparece na conta, com tradução dos termos técnicos.',
+  impostosEncargos: 'Tributos (impostos) e cobranças extras separados por tipo. Retenções reduzem o valor; multas aumentam.',
+  microGeracao: 'Dados da sua geração própria (solar etc.): quanto injetou na rede e quanto de crédito acumulou para descontar em meses futuros.',
+  comparativoMT: 'Compara o consumo entre vários meses para ver tendência de aumento ou redução.',
+
+  // Tabela MT — colunas
+  colItemConta: 'Nome técnico exatamente como aparece na fatura da distribuidora (EDP, CEMIG etc.).',
+  colDescricao: 'Tradução em linguagem simples do que aquele item significa para você.',
+  colConsumo: 'Quantidade medida: kWh (energia), kW (potência/demanda) ou kVArh (energia reativa).',
+  colUnidade: 'Unidade de medida. kWh = energia consumida; kW = potência; kVArh = reativo.',
+  colTarifa: 'Preço unitário cobrado por cada kWh ou kW. Multiplicado pelo consumo, dá o valor do item.',
+  colValor: 'Quanto em reais aquele item custou (ou abateu, se negativo) nesta fatura.',
+
+  // Tipos de item (badges)
+  tipoEnergia: 'GASTO de energia elétrica consumida. É o que você usou — luz, equipamentos, produção.',
+  tipoDemanda: 'GASTO por potência máxima (kW) registrada. Comum em contas industriais (média tensão).',
+  tipoReativa: 'GASTO extra por energia reativa — penalidade quando equipamentos consomem energia "fora de fase".',
+  tipoEncargo: 'GASTO regulatório ou penalidade: bandeira tarifária, DMCR, ERE, juros ou multa por atraso.',
+  tipoImposto: 'Tributo ou taxa obrigatória: ICMS, PIS, COFINS embutidos, CIP (iluminação pública) etc.',
+  tipoDesconto: 'Valor que REDUZ sua conta: retenções na fonte (PIS, COFINS...) ou outros abatimentos.',
+  tipoGeracao: 'Crédito de energia GERADA por você (solar) e injetada na rede. Não é gasto — diminui a fatura.',
+
+  // Composição de custos (barras)
+  costEnergiaAtiva: 'Quanto você pagou pelo consumo de energia elétrica (horário de pico + fora de pico).',
+  costEnergiaReativa: 'Penalidade por exceder o limite de energia reativa — indica baixo fator de potência.',
+  costDemanda: 'Cobrança pela potência máxima (kW) demandada da rede no mês.',
+  costDMCR: 'Cobrança por ultrapassar a demanda contratada registrada (Demanda Máxima Contratada Registrada).',
+  costERE: 'Encargo regulatório de eficiência energética (Energia de Referência de Eficiência).',
+  costCIP: 'Taxa municipal de Iluminação Pública — obrigatória, repassada pela distribuidora à prefeitura.',
+  costICMS: 'Imposto estadual sobre energia — já incluído nas tarifas, aqui mostrado separado para transparência.',
+  costMultas: 'Multa + juros por pagamento em atraso da fatura anterior.',
+  costGeracao: 'Crédito em reais gerado pela energia solar (ou GD) que você injetou na rede.',
+  costRetencoes: 'Impostos retidos na fonte que abatem o total — você paga menos por causa disso.',
+
+  // Impostos — painel
+  secImpostosTaxas: 'Tributos e taxas que compõem ou acrescentam valor à fatura.',
+  secRetencoes: 'Impostos retidos na fonte — são descontados do total a pagar (você paga menos).',
+  secEncargosAtraso: 'Penalidades por atraso no pagamento — evitáveis pagando em dia.',
+  taxICMS: 'Imposto sobre Circulação de Mercadorias e Serviços — imposto estadual embutido na tarifa de energia.',
+  taxPISCOFINS: 'Contribuições federais (PIS e COFINS) incluídas no preço regulado da energia.',
+  taxCIP: 'Contribuição de Iluminação Pública — taxa municipal para manter postes e luz das ruas.',
+  taxRetPIS: 'PIS retido na fonte — abate do valor total (desconto fiscal para pessoa jurídica).',
+  taxRetCOFINS: 'COFINS retida na fonte — abate do valor total.',
+  taxRetCSLL: 'CSLL retida na fonte — abate do valor total.',
+  taxRetIRRF: 'Imposto de Renda retido na fonte — abate do valor total.',
+  taxJuros: 'Juros cobrados porque a fatura anterior foi paga após o vencimento.',
+  taxMulta: 'Multa por atraso no pagamento da fatura anterior.',
+
+  // Geração distribuída
+  gdInjPonta: 'kWh que suas placas (ou gerador) enviaram para a rede no horário de pico (geralmente 18h–21h).',
+  gdInjFPonta: 'kWh enviados para a rede fora do horário de pico — horário mais comum para injeção solar.',
+  gdSaldoPonta: 'Créditos de energia acumulados no horário de pico, disponíveis para usar em meses futuros.',
+  gdSaldoFPonta: 'Créditos acumulados fora do pico — podem compensar consumo futuro.',
+  gdSaldoTotal: 'Total de créditos de energia que você ainda tem para descontar em faturas futuras.',
+  gdParticipacao: 'Percentual do seu consumo que foi coberto pelos créditos de geração neste mês.',
+
+  // Análise
+  analiseVariacao: 'Mostra a diferença de consumo da fatura mais recente em relação à anterior.',
+  analiseMultas: 'Total de multas e juros pagos em todas as faturas importadas.',
+  analiseTimeline: 'Linha do tempo com resumo de cada fatura importada.',
+
+  // Histórico
+  histPeriodo: 'Mês/ano de referência da fatura (ex.: dez/2024 = consumo de dezembro).',
+  histConsumo: 'Total de kWh consumidos naquele mês.',
+  histValor: 'Valor total em reais a pagar na fatura.',
+  histBandeira: 'Bandeira tarifária daquele mês: verde (sem acréscimo), amarela ou vermelha (mais cara).',
+};
+
+const TIPO_HELP = { energia:'tipoEnergia', demanda:'tipoDemanda', reativa:'tipoReativa', encargo:'tipoEncargo', imposto:'tipoImposto', desconto:'tipoDesconto', geracao:'tipoGeracao' };
+
+function tipHtml(key, extraClass = '') {
+  const text = GLOSSARY[key];
+  if (!text) return '';
+  return `<span class="help-tip ${extraClass}" tabindex="0" role="button" aria-label="Ajuda"><span class="help-tip-icon">?</span><span class="help-tip-text">${text}</span></span>`;
+}
+
+function initTips(root = document) {
+  root.querySelectorAll('[data-tip]').forEach(el => {
+    if (el.querySelector('.help-tip')) return;
+    const key = el.getAttribute('data-tip');
+    if (GLOSSARY[key]) el.insertAdjacentHTML('beforeend', tipHtml(key, el.getAttribute('data-tip-class') || ''));
+  });
+}
+
+// ═══════════════ INIT
+window.addEventListener('DOMContentLoaded', () => {
+  if (state.geminiKey) {
+    document.getElementById('tokenModal').style.display = 'none';
+    document.getElementById('apiStatus').textContent = 'Configurada ✓';
+    document.getElementById('apiStatus').className = 'text-secondary';
+  }
+  showPage('dashboard');
+  document.getElementById('mainFileInput').addEventListener('change', e => {
+    [...e.target.files].forEach(f => processPDF(f));
+    e.target.value = '';
+  });
+  document.getElementById('chatFileInput').addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    addChatMsg('user', `📎 Enviando fatura: <strong>${f.name}</strong>`);
+    processPDF(f, true);
+    e.target.value = '';
+  });
+  document.getElementById('chatInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) sendChat();
+  });
+  const dz = document.getElementById('sidebarDrop');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor='#92ccff'; });
+  dz.addEventListener('dragleave', () => { dz.style.borderColor=''; });
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.style.borderColor='';
+    [...e.dataTransfer.files].filter(f=>f.type==='application/pdf').forEach(f=>processPDF(f));
+  });
+  initTips();
+});
+
+// ═══════════════ TOKEN
+function saveToken() {
+  const val = document.getElementById('tokenInput').value.trim();
+  if (!val.startsWith('AIza') || val.length < 20) {
+    document.getElementById('tokenError').classList.remove('hidden'); return;
+  }
+  state.geminiKey = val;
+  localStorage.setItem('luminous_gemini_key', val);
+  document.getElementById('tokenModal').style.display = 'none';
+  document.getElementById('apiStatus').textContent = 'Configurada ✓';
+  document.getElementById('apiStatus').className = 'text-secondary';
+}
+
+// ═══════════════ NAVIGATION
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => { p.classList.remove('active'); p.style.display='none'; });
+  const pg = document.getElementById('page-' + name);
+  if (pg) {
+    if (name === 'chat') { pg.style.display='flex'; }
+    else { pg.classList.add('active'); pg.style.display='block'; }
+  }
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('nav-active');
+    if (n.dataset.page === name) n.classList.add('nav-active');
+  });
+  const titles = { dashboard:'Painel de Controle', analise:'Análise de Energia', 'media-tensao':'Média Tensão — Detalhamento MT', analitico:'Analítico — Otimização de Demanda', 'indicador-ia':'Indicador IA — Recomendação de Demanda', chat:'Assistente IA', historico:'Histórico de Faturas', alertas:'Multas & Alertas' };
+  document.getElementById('pageTitle').textContent = titles[name] || '';
+  if (name === 'media-tensao') renderMTPage();
+  if (name === 'analitico') updateAnaliticoPage();
+  if (name === 'indicador-ia') renderIndicadorIAPage();
+  initTips(document.getElementById('page-' + name) || document);
+}
+
+// ═══════════════ GEMINI API
+async function callGemini(promptOrContents, pdfBase64 = null, opts = {}) {
+  if (!state.geminiKey) return demoResponse(typeof promptOrContents === 'string' ? promptOrContents : '');
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${state.geminiKey}`;
+  let contents;
+  if (Array.isArray(promptOrContents)) {
+    contents = promptOrContents;
+  } else {
+    const parts = [];
+    if (pdfBase64) parts.push({ inlineData: { mimeType: 'application/pdf', data: pdfBase64 } });
+    parts.push({ text: promptOrContents });
+    contents = [{ role: 'user', parts }];
+  }
+  const generationConfig = {
+    temperature: opts.temperature ?? 0.2,
+    maxOutputTokens: opts.maxOutputTokens ?? 8192,
+    thinkingConfig: { thinkingBudget: opts.thinkingBudget ?? 0 },
+    ...(opts.jsonMode ? { responseMimeType: 'application/json' } : {})
+  };
+  const body = { contents, generationConfig };
+  if (opts.systemInstruction) {
+    body.systemInstruction = { parts: [{ text: opts.systemInstruction }] };
+  }
+  const resp = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+  if (!resp.ok) { const err = await resp.json(); throw new Error(err.error?.message || `HTTP ${resp.status}`); }
+  const data = await resp.json();
+  const candidate = data.candidates?.[0];
+  const text = getGeminiResponseText(candidate);
+  if (candidate?.finishReason === 'MAX_TOKENS') {
+    if (opts.throwOnTruncated === false && text) return { text, truncated: true };
+    const err = new Error('Resposta da IA truncada (limite de tokens). Tente novamente.');
+    err.truncated = true;
+    err.partialText = text;
+    throw err;
+  }
+  return text;
+}
+
+function getGeminiResponseText(candidate) {
+  const parts = candidate?.content?.parts || [];
+  const answerParts = parts.filter(p => !p.thought);
+  const source = answerParts.length ? answerParts : parts;
+  return source.map(p => p.text || '').join('').trim();
+}
+
+function demoResponse(prompt) {
+  return 'Configure a chave Gemini API (botão API Key no menu lateral) para respostas com IA.';
+}
+
+// ═══════════════ PDF PROCESSING
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('Falha ao ler arquivo'));
+    r.readAsDataURL(file);
+  });
+}
+
+function extractJSON(raw) {
+  if (!raw) return null;
+  try { return JSON.parse(raw.trim()); } catch(e) {}
+  const s = raw.replace(/```json/gi,'').replace(/```/g,'').trim();
+  try { return JSON.parse(s); } catch(e) {}
+  const m = raw.match(/\{[\s\S]*\}/);
+  if (m) try { return JSON.parse(m[0]); } catch(e) {}
+  return null;
+}
+
+async function callGeminiJSON(prompt, pdfBase64, opts = {}) {
+  const geminiOpts = { jsonMode: true, maxOutputTokens: opts.maxOutputTokens ?? 8192 };
+  try {
+    const raw = await callGemini(prompt, pdfBase64, geminiOpts);
+    const data = extractJSON(raw);
+    if (data) return data;
+  } catch (err) {
+    if (err.truncated && err.partialText) {
+      const partial = extractJSON(err.partialText);
+      if (partial) return partial;
+    }
+    if (!err.truncated) throw err;
+  }
+  const raw = await callGemini(prompt + '\n\nRetorne APENAS JSON válido, sem markdown.', pdfBase64, geminiOpts);
+  return extractJSON(raw);
+}
+
+// Etapa 1: cabeçalho e totais (JSON pequeno, evita MAX_TOKENS)
+const BASIC_EXTRACTION_PROMPT = `Especialista em contas de energia elétrica brasileira (EDP, CEMIG, COPEL, ENEL, CPFL, ENERGISA, Light, Elektro, Coelba).
+Analise o PDF e retorne SOMENTE este JSON:
+
+{
+  "mes": "mmm/AAAA",
+  "kwh": 0,
+  "valor": 0.00,
+  "multa": 0.00,
+  "motivoMulta": "",
+  "kwhAnoPassado": null,
+  "bandeira": "verde",
+  "vencimento": "DD/MM/AAAA",
+  "distribuidora": "nome",
+  "tipoTarifa": "BT",
+  "subgrupo": ""
+}
+
+Regras:
+- mes no formato "dez/2024"
+- kwh: consumo total em kWh (ponta + fora ponta se MT)
+- valor: total a pagar
+- multa: soma de multa + juros de mora
+- tipoTarifa: "BT" (baixa tensão) ou "MT" (média tensão / Grupo A)
+- subgrupo: ex. "A4", "A3a", "B1"`;
+
+// Etapa 2: itens e detalhamento MT (segunda chamada com PDF)
+const DETAILS_EXTRACTION_PROMPT = (basic) => `Especialista em contas de energia elétrica brasileira.
+Esta fatura é ${basic.tipoTarifa === 'MT' ? 'MÉDIA TENSÃO (Grupo A)' : 'BAIXA TENSÃO'} — ${basic.distribuidora || 'distribuidora'}, mês ${basic.mes}.
+Analise o PDF e retorne SOMENTE este JSON:
+
+{
+  "itens": [
+    {"nome":"código técnico","descricao":"descrição clara","consumo":0,"unidade":"kWh","tarifa":0,"valor":0,"tipo":"energia|demanda|reativa|encargo|desconto|imposto|geracao"}
+  ],
+  "impostos": {"retencaoPIS":0,"retencaoCOFINS":0,"retencaoCSLL":0,"retencaoIRRF":0,"ICMS":0,"PIS_fatura":0,"COFINS_fatura":0,"CIP":0,"jurosMora":0,"multaMora":0,"outros":0},
+  "demanda": {"contratadaPonta_kW":0,"contratadaFPonta_kW":0,"medidaPonta_kW":0,"medidaFPonta_kW":0,"valorPonta":0,"valorFPonta":0},
+  "energiaAtiva": {"ponta_kWh":0,"foraPonta_kWh":0,"valorPonta":0,"valorForaPonta":0},
+  "energiaReativa": {"ponta_kVAh":0,"foraPonta_kVAh":0,"valorPonta":0,"valorForaPonta":0},
+  "geracaoDistribuida": {"injetadaPonta_kWh":0,"injetadaFPonta_kWh":0,"saldoPonta_kWh":0,"saldoFPonta_kWh":0,"saldoTotal_kWh":0,"participacaoSaldo_pct":0,"creditoPonta":0,"creditoFPonta":0},
+  "DMCR": {"ponta_kW":0,"foraPonta_kW":0,"valorPonta":0,"valorForaPonta":0},
+  "ERE": {"ponta_kWh":0,"foraPonta_kWh":0,"valorPonta":0,"valorForaPonta":0}
+}
+
+Regras:
+- itens: TODOS os lançamentos da fatura (incluindo descontos com valor negativo)
+- descricao: traduza nomes técnicos para linguagem clara
+- Para BT: demanda/energiaReativa/DMCR/ERE podem ser zero
+- Use números, não strings
+
+Classificação do campo "tipo" (OBRIGATÓRIO — siga exatamente):
+| tipo | O que é | Exemplos EDP |
+| geracao | Energia INJETADA na rede / crédito GD — valor NEGATIVO | "Energia Inj. FPonta", "Energia inj ativa" |
+| energia | GASTO de consumo elétrico (kWh) | "Energia Ativa Ponta", TE, TUSD Energia |
+| demanda | GASTO por demanda contratada/medida (kW) | "Demanda Ponta", "Demanda Fora Ponta" |
+| reativa | GASTO por energia reativa excedente | "Energia Reativa Excedente" |
+| encargo | GASTO regulatório ou penalidade | DMCR, ERE, bandeira, juros de mora, multa |
+| imposto | Tributo/taxa explícita | CIP, COSIP, ICMS (se linha separada) |
+| desconto | Retenção na fonte / abatimento — valor NEGATIVO | Retenção PIS, COFINS, CSLL, IRRF |
+
+ATENÇÃO:
+- "Energia Ativa" é energia (gasto), NUNCA geracao
+- CIP/COSIP é imposto, NÃO encargo
+- Retenções são desconto, NÃO imposto
+- ICMS/PIS/COFINS embutidos na tarifa: preencha objeto impostos, não duplique nos itens`;
+
+async function extractBillData(b64) {
+  showToast('Etapa 1/2: dados básicos...');
+  const basic = await callGeminiJSON(BASIC_EXTRACTION_PROMPT, b64, { maxOutputTokens: 2048 });
+  if (!basic?.mes) throw new Error('Não foi possível ler os dados básicos da fatura.');
+
+  showToast('Etapa 2/2: itens e detalhamento...');
+  let details = await callGeminiJSON(DETAILS_EXTRACTION_PROMPT(basic), b64, { maxOutputTokens: 8192 });
+
+  if (!details) {
+    showToast('Etapa 2/2: extraindo itens (modo compacto)...');
+    details = await callGeminiJSON(
+      DETAILS_EXTRACTION_PROMPT(basic) + '\n\nIMPORTANTE: retorne apenas "itens" e "impostos". Omita seções zeradas.',
+      b64,
+      { maxOutputTokens: 8192 }
+    );
+  }
+
+  if (!details) throw new Error('Não foi possível extrair os itens da fatura.');
+  return { ...basic, ...details };
+}
+
+async function processPDF(file, fromChat = false) {
+  showToast(`Processando ${file.name}...`);
+  try {
+    const b64 = await fileToBase64(file);
+    const data = await extractBillData(b64);
+
+    if (!data) throw new Error('Não foi possível extrair dados. Verifique se é uma conta de energia válida.');
+
+    // normalize basic
+    data.kwh = parseFloat(data.kwh) || 0;
+    data.valor = parseFloat(data.valor) || 0;
+    data.multa = parseFloat(data.multa) || 0;
+    data.kwhAnoPassado = data.kwhAnoPassado != null ? parseFloat(data.kwhAnoPassado) : null;
+    data.mes = data.mes || '?/?';
+    data.fileName = file.name;
+    data.bandeira = data.bandeira || 'verde';
+    data.tipoTarifa = data.tipoTarifa || 'BT';
+    if (!data.itens) data.itens = [];
+    if (!data.impostos) data.impostos = {};
+    if (!data.demanda) data.demanda = {};
+    if (!data.energiaAtiva) data.energiaAtiva = {};
+    if (!data.energiaReativa) data.energiaReativa = {};
+    if (!data.geracaoDistribuida) data.geracaoDistribuida = {};
+    if (!data.DMCR) data.DMCR = {};
+    if (!data.ERE) data.ERE = {};
+    normalizeBillItems(data);
+
+    // deduplicate by mes
+    const existing = state.bills.findIndex(b => b.mes === data.mes);
+    if (existing >= 0) state.bills[existing] = data;
+    else state.bills.push(data);
+    state.bills.sort((a,b) => parseMonthYear(a.mes) - parseMonthYear(b.mes));
+
+    hideToast();
+    updateAllViews();
+
+    if (fromChat) {
+      const isMT = data.tipoTarifa === 'MT';
+      addChatMsg('ai', `✅ Fatura processada!<br><br>
+        📅 <strong>${data.mes}</strong> — ${data.distribuidora || 'Distribuidora'} ${isMT ? '<span style="color:#eec209">[MÉDIA TENSÃO]</span>' : ''}<br>
+        ⚡ Consumo: <strong>${data.kwh} kWh</strong><br>
+        💰 Valor: <strong>R$ ${fmtR(data.valor)}</strong>${data.multa > 0 ? `<br>⚠️ Multa/Juros: <strong style="color:#ffb4ab">R$ ${fmtR(data.multa)}</strong>` : ''}<br>
+        🚦 Bandeira: <strong>${data.bandeira}</strong>
+        ${isMT ? `<br>🔌 Demanda Ponta: <strong>${data.demanda.medidaPonta_kW || 0} kW</strong> / Fora Ponta: <strong>${data.demanda.medidaFPonta_kW || 0} kW</strong>` : ''}`);
+    }
+  } catch(err) {
+    hideToast();
+    showToast('Erro: ' + err.message, true);
+    if (fromChat) addChatMsg('ai', `❌ Erro ao processar <strong>${file.name}</strong>: ${err.message}`);
+    setTimeout(hideToast, 4000);
+  }
+}
+
+// ═══════════════ HELPERS
+function parseMonthYear(s) {
+  const mo={jan:0,fev:1,mar:2,abr:3,mai:4,jun:5,jul:6,ago:7,set:8,out:9,nov:10,dez:11};
+  if (!s) return 0;
+  const p = s.toLowerCase().replace(/[^\w\/]/g,'').split('/');
+  return (parseInt(p[1]||2024)*100)+(mo[p[0]]??0);
+}
+function fmtR(v) { return parseFloat(v||0).toFixed(2).replace('.',','); }
+
+// ── Classificação semântica: geração ≠ gasto ≠ imposto ──
+const TIPO_LABELS = {
+  energia: 'Energia', demanda: 'Demanda', reativa: 'Reativa',
+  encargo: 'Encargo', imposto: 'Imposto', desconto: 'Desconto', geracao: 'Geração'
+};
+
+function itemText(item) {
+  return ((item.nome || '') + ' ' + (item.descricao || '')).toLowerCase()
+    .normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
+
+function classifyItemTipo(item) {
+  const t = itemText(item);
+  const val = parseFloat(item.valor) || 0;
+
+  // Geração distribuída — injeção/crédito (NÃO é consumo/gasto)
+  if (/inj(etad|\.|\s)|injetada|microger|autoprodu|geracao distrib|\bgd\b|energia inj|credito.*gd|compensad.*energia/.test(t)) {
+    return 'geracao';
+  }
+  if (/geracao|injet/.test(t) && !/energia ativa|cons\.|consumo|tusd|\bte\b/.test(t)) {
+    return 'geracao';
+  }
+
+  // Retenções e abatimentos
+  if (/retencao|ret\.|reten\.|desconto|abatimento|devoluc|bonific/.test(t)) return 'desconto';
+
+  // Impostos/taxas explícitos (CIP, ICMS linha separada)
+  if (/cip\b|cosip|contrib.*ilum|ilum.*pub|ilum publica/.test(t)) return 'imposto';
+  if (/\bicms\b/.test(t) && !/reten/.test(t)) return 'imposto';
+  if (/pis\/|cofins|csll\b|irrf\b/.test(t) && !/reten|retenc/.test(t)) return 'imposto';
+
+  // Encargos regulatórios e mora (gastos extras)
+  if (/dmcr|\bere\b|bandeira|encargo|setorial|\bcde\b|\bccc\b|juros|multa|mora|penalid/.test(t)) return 'encargo';
+
+  // Demanda (gasto kW)
+  if (/demanda|ultrapass.*demand/.test(t)) return 'demanda';
+  if (item.unidade === 'kW' && /demanda|potenc|ultrapass/.test(t)) return 'demanda';
+
+  // Reativa (gasto kVArh)
+  if (/reativ|kvar|ufer|ufir|fator pot/.test(t)) return 'reativa';
+
+  // Valor negativo sem classificação = desconto
+  if (val < 0) return 'desconto';
+
+  // Gasto de energia (consumo kWh) — default
+  if (/energia|consumo|tusd|\bte\b|ativo|kwh/.test(t)) return 'energia';
+
+  return (item.tipo && TIPO_LABELS[item.tipo]) ? item.tipo : 'energia';
+}
+
+function syncImpostosFromItens(data) {
+  const imp = data.impostos;
+  (data.itens || []).forEach(item => {
+    const t = itemText(item);
+    const val = Math.abs(parseFloat(item.valor) || 0);
+    if (!val) return;
+    if (item.tipo === 'desconto') {
+      if (/pis/.test(t)) imp.retencaoPIS = val;
+      else if (/cofins/.test(t)) imp.retencaoCOFINS = val;
+      else if (/csll/.test(t)) imp.retencaoCSLL = val;
+      else if (/irrf|\bir\b/.test(t)) imp.retencaoIRRF = val;
+    } else if (item.tipo === 'imposto') {
+      if (/icms/.test(t)) imp.ICMS = val;
+      else if (/cip|ilum/.test(t)) imp.CIP = val;
+      else if (/pis/.test(t)) imp.PIS_fatura = val;
+      else if (/cofins/.test(t)) imp.COFINS_fatura = val;
+    } else if (item.tipo === 'encargo') {
+      if (/juros/.test(t)) imp.jurosMora = val;
+      else if (/multa/.test(t)) imp.multaMora = val;
+    }
+  });
+}
+
+function syncGeracaoFromItens(data) {
+  const gd = data.geracaoDistribuida;
+  (data.itens || []).filter(i => i.tipo === 'geracao').forEach(item => {
+    const t = itemText(item);
+    const kwh = Math.abs(parseFloat(item.consumo) || 0);
+    const credito = Math.abs(parseFloat(item.valor) || 0);
+    const isFP = /fora|fponta|f ponta|f\. ponta/.test(t);
+    const isP = /ponta/.test(t) && !isFP;
+    if (isP) {
+      if (kwh) gd.injetadaPonta_kWh = kwh;
+      if (credito) gd.creditoPonta = credito;
+    } else if (isFP) {
+      if (kwh) gd.injetadaFPonta_kWh = kwh;
+      if (credito) gd.creditoFPonta = credito;
+    } else if (kwh) {
+      gd.injetadaFPonta_kWh = (gd.injetadaFPonta_kWh || 0) + kwh;
+    }
+  });
+}
+
+function normalizeBillItems(data) {
+  if (!data.itens) data.itens = [];
+  data.itens = data.itens.map(item => {
+    const tipo = classifyItemTipo(item);
+    let valor = parseFloat(item.valor) || 0;
+    if ((tipo === 'geracao' || tipo === 'desconto') && valor > 0) valor = -valor;
+    return {
+      ...item, tipo,
+      valor,
+      consumo: parseFloat(item.consumo) || 0,
+      tarifa: parseFloat(item.tarifa) || 0,
+      descricao: item.descricao || MT_DESCRIPTIONS[item.nome] || item.nome
+    };
+  });
+  syncImpostosFromItens(data);
+  syncGeracaoFromItens(data);
+}
+
+function bandeiraColor(b) { return {verde:'text-secondary',amarela:'text-tertiary',vermelha1:'text-error',vermelha2:'text-error'}[b]||'text-neutral-400'; }
+function bandeiraLabel(b) { return {verde:'🟢 Verde',amarela:'🟡 Amarela',vermelha1:'🔴 Vermelha 1',vermelha2:'🔴 Vermelha 2'}[b]||b||'—'; }
+
+// ═══════════════ UPDATE ALL
+function updateAllViews() {
+  updateDashboard();
+  updateAnalise();
+  updateHistorico();
+  updateAlertas();
+  updateChatPanel();
+  updateMTSelector();
+  updateAnaliticoPage();
+  if (document.getElementById('page-media-tensao').style.display !== 'none') renderMTPage();
+  initTips();
+}
+
+// ═══════════════ MT SELECTOR
+function updateMTSelector() {
+  const sel = document.getElementById('mtBillSelect');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Selecione uma fatura —</option>';
+  state.bills.forEach((b, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${b.mes} — ${b.distribuidora || 'Distribuidora'} ${b.tipoTarifa === 'MT' ? '(MT)' : '(BT)'}`;
+    sel.appendChild(opt);
+  });
+  if (current !== '' && state.bills[current]) sel.value = current;
+  else if (state.bills.length > 0) sel.value = state.bills.length - 1;
+}
+
+// ═══════════════ MT PAGE RENDER
+function renderMTPage() {
+  const sel = document.getElementById('mtBillSelect');
+  const idx = parseInt(sel.value);
+  const b = state.bills[idx];
+  const empty = document.getElementById('mt-empty');
+  const content = document.getElementById('mt-content');
+
+  if (!b) { empty.classList.remove('hidden'); content.classList.add('hidden'); return; }
+  empty.classList.add('hidden');
+  content.classList.remove('hidden');
+
+  // KPIs
+  const ePonta = parseFloat(b.energiaAtiva?.ponta_kWh) || 0;
+  const eFP = parseFloat(b.energiaAtiva?.foraPonta_kWh) || 0;
+  const totalAtiva = ePonta + eFP || b.kwh;
+  document.getElementById('mt-kpi-energia-ativa').textContent = totalAtiva.toLocaleString('pt-BR') + ' kWh';
+
+  const dP = parseFloat(b.demanda?.medidaPonta_kW || b.demanda?.contratadaPonta_kW) || 0;
+  const dFP = parseFloat(b.demanda?.medidaFPonta_kW || b.demanda?.contratadaFPonta_kW) || 0;
+  document.getElementById('mt-kpi-demanda').textContent = (dP + dFP).toLocaleString('pt-BR') + ' kW';
+
+  const injP = parseFloat(b.geracaoDistribuida?.injetadaPonta_kWh) || 0;
+  const injFP = parseFloat(b.geracaoDistribuida?.injetadaFPonta_kWh) || 0;
+  document.getElementById('mt-kpi-geracao').textContent = (injP + injFP).toLocaleString('pt-BR') + ' kWh';
+
+  const encargos = (parseFloat(b.impostos?.jurosMora)||0) + (parseFloat(b.impostos?.multaMora)||0);
+  document.getElementById('mt-kpi-encargos').textContent = 'R$ ' + fmtR(encargos);
+
+  document.getElementById('mt-ref-label').textContent = `FATURA ${b.mes?.toUpperCase()} — ${b.distribuidora || ''}`;
+
+  // Cost bars
+  renderMTCostBars(b);
+  // Donut
+  renderMTDonut(b);
+  // Items table
+  renderMTItemsTable(b);
+  // Taxes
+  renderMTTaxes(b);
+  // GD
+  renderMTGD(b);
+  // Comparison chart
+  renderMTCompare();
+}
+
+const COST_GROUPS = [
+  { key: 'energiaAtiva',  label: 'Energia Ativa (Ponta + Fora Ponta)', help: 'costEnergiaAtiva', color: '#92ccff', icon: 'bolt',        fn: b => (parseFloat(b.energiaAtiva?.valorPonta)||0)+(parseFloat(b.energiaAtiva?.valorForaPonta)||0) },
+  { key: 'energiaReativa',label: 'Energia Reativa Excedente',           help: 'costEnergiaReativa', color: '#eec209', icon: 'electric_meter', fn: b => (parseFloat(b.energiaReativa?.valorPonta)||0)+(parseFloat(b.energiaReativa?.valorForaPonta)||0) },
+  { key: 'demanda',       label: 'Demanda Medida (Ponta + Fora Ponta)', help: 'costDemanda', color: '#3498db', icon: 'speed',       fn: b => (parseFloat(b.demanda?.valorPonta)||0)+(parseFloat(b.demanda?.valorFPonta)||0) },
+  { key: 'DMCR',         label: 'Demanda Máxima Contratada Registrada',help: 'costDMCR', color: '#ff9800', icon: 'warning_amber', fn: b => (parseFloat(b.DMCR?.valorPonta)||0)+(parseFloat(b.DMCR?.valorForaPonta)||0) },
+  { key: 'ERE',          label: 'Energia de Referência de Eficiência', help: 'costERE', color: '#9c27b0', icon: 'eco',         fn: b => (parseFloat(b.ERE?.valorPonta)||0)+(parseFloat(b.ERE?.valorForaPonta)||0) },
+  { key: 'CIP',          label: 'Contribuição de Iluminação Pública (CIP)', help: 'costCIP', color: '#78909c', icon: 'lightbulb',   fn: b => parseFloat(b.impostos?.CIP)||0 },
+  { key: 'ICMS',         label: 'ICMS (embutido na tarifa)',                help: 'costICMS', color: '#9e9e9e', icon: 'account_balance', fn: b => parseFloat(b.impostos?.ICMS)||0 },
+  { key: 'multas',       label: 'Multa de Mora e Juros',                    help: 'costMultas', color: '#f44336', icon: 'gavel',       fn: b => (parseFloat(b.impostos?.multaMora)||0)+(parseFloat(b.impostos?.jurosMora)||0) },
+  { key: 'geracao',      label: 'Crédito de Geração Distribuída',            help: 'costGeracao', color: '#4ae183', icon: 'solar_power', fn: b => -Math.abs((parseFloat(b.geracaoDistribuida?.creditoPonta)||0)+(parseFloat(b.geracaoDistribuida?.creditoFPonta)||0)) },
+  { key: 'retPIS',       label: 'Retenções na Fonte (PIS/COFINS/CSLL/IRRF)', help: 'costRetencoes', color: '#607d8b', icon: 'savings',     fn: b => -((parseFloat(b.impostos?.retencaoPIS)||0)+(parseFloat(b.impostos?.retencaoCOFINS)||0)+(parseFloat(b.impostos?.retencaoCSLL)||0)+(parseFloat(b.impostos?.retencaoIRRF)||0)) },
+];
+
+function renderMTCostBars(b) {
+  const container = document.getElementById('mt-cost-bars');
+  const items = COST_GROUPS.map(g => ({ ...g, value: g.fn(b) })).filter(g => g.value !== 0);
+  const positives = items.filter(i => i.value > 0);
+  const maxVal = Math.max(...positives.map(i => i.value), 1);
+
+  // prev bill for comparison
+  const sel = document.getElementById('mtBillSelect');
+  const idx = parseInt(sel.value);
+  const prev = state.bills[idx - 1];
+
+  container.innerHTML = items.map(item => {
+    const isNeg = item.value < 0;
+    const pct = isNeg ? 0 : Math.min((item.value / maxVal) * 100, 100);
+    const prevVal = prev ? item.fn(prev) : null;
+    let compHtml = '';
+    if (prevVal !== null && prevVal !== 0 && !isNeg) {
+      const diff = item.value - prevVal;
+      const pctDiff = ((diff / Math.abs(prevVal)) * 100).toFixed(1);
+      const cls = diff > 0 ? 'bg-error/20 text-error' : 'bg-secondary/20 text-secondary';
+      compHtml = `<span class="comparison-pill ${cls}">${diff>0?'+':''}${pctDiff}%</span>`;
+    }
+    return `
+      <div class="group">
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-sm filled-icon" style="color:${item.color}">${item.icon}</span>
+            <span class="text-xs text-neutral-400 group-hover:text-neutral-200 transition-colors label-with-tip">${item.label}${tipHtml(item.help, 'tip-below')}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            ${compHtml}
+            <span class="text-xs font-bold ${isNeg ? 'text-secondary' : 'text-on-surface'}">${isNeg ? '-' : ''}R$ ${fmtR(Math.abs(item.value))}</span>
+          </div>
+        </div>
+        <div class="w-full h-2 bg-surface-container-highest rounded-full overflow-hidden">
+          <div class="cost-bar rounded-full" style="width:${isNeg ? 30 : pct}%;background:${isNeg ? '#4ae183' : item.color};opacity:${isNeg ? 0.6 : 0.85}"></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderMTDonut(b) {
+  const donut_items = [
+    { label: 'Energia Ativa',  color: '#92ccff', fn: b => (parseFloat(b.energiaAtiva?.valorPonta)||0)+(parseFloat(b.energiaAtiva?.valorForaPonta)||0) },
+    { label: 'Demanda',        color: '#3498db', fn: b => (parseFloat(b.demanda?.valorPonta)||0)+(parseFloat(b.demanda?.valorFPonta)||0) },
+    { label: 'Reativa',        color: '#eec209', fn: b => (parseFloat(b.energiaReativa?.valorPonta)||0)+(parseFloat(b.energiaReativa?.valorForaPonta)||0) },
+    { label: 'Impostos/Taxas', color: '#78909c', fn: b => (parseFloat(b.impostos?.CIP)||0)+(parseFloat(b.impostos?.ICMS)||0)+(parseFloat(b.impostos?.PIS_fatura)||0)+(parseFloat(b.impostos?.COFINS_fatura)||0) },
+    { label: 'Encargos/Mora',  color: '#ff5722', fn: b => (parseFloat(b.impostos?.multaMora)||0)+(parseFloat(b.impostos?.jurosMora)||0) },
+    { label: 'Outros',         color: '#607d8b', fn: b => (parseFloat(b.DMCR?.valorPonta)||0)+(parseFloat(b.DMCR?.valorForaPonta)||0)+(parseFloat(b.ERE?.valorPonta)||0)+(parseFloat(b.ERE?.valorForaPonta)||0) },
+  ];
+  const values = donut_items.map(d => ({ ...d, value: d.fn(b) })).filter(d => d.value > 0);
+  const total = values.reduce((s, d) => s + d.value, 0);
+  document.getElementById('mt-donut-center').textContent = total > 0 ? fmtR(total) : fmtR(b.valor);
+
+  const svg = document.getElementById('mt-donut-svg');
+  // clear previous rings
+  while (svg.children.length > 1) svg.removeChild(svg.lastChild);
+
+  const r = 40, circ = 2 * Math.PI * r;
+  let offset = 0;
+  values.forEach(d => {
+    const pct = total > 0 ? d.value / total : 0;
+    const dash = pct * circ;
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', 50); circle.setAttribute('cy', 50); circle.setAttribute('r', r);
+    circle.setAttribute('fill', 'none');
+    circle.setAttribute('stroke', d.color);
+    circle.setAttribute('stroke-width', 12);
+    circle.setAttribute('stroke-dasharray', `${dash} ${circ - dash}`);
+    circle.setAttribute('stroke-dashoffset', -offset);
+    circle.setAttribute('class', 'donut-ring');
+    svg.appendChild(circle);
+    offset += dash;
+  });
+
+  const legend = document.getElementById('mt-legend');
+  legend.innerHTML = values.map(d => `
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-sm flex-shrink-0" style="background:${d.color}"></span>
+        <span class="text-xs text-neutral-400">${d.label}</span>
+      </div>
+      <span class="text-xs font-bold">${total > 0 ? ((d.value/total)*100).toFixed(1) : 0}%</span>
+    </div>`).join('');
+}
+
+// Descriptions for common MT items
+const MT_DESCRIPTIONS = {
+  'Energia Ativa Ponta': 'Energia consumida no horário de pico (geralmente 18h–21h). Tarifa mais cara.',
+  'Energia Ativa Fora Ponta': 'Energia consumida fora do horário de pico. Tarifa normal.',
+  'Demanda Máxima Ponta': 'Potência máxima registrada no horário de pico (kW cobrado).',
+  'Demanda Máxima FPonta': 'Potência máxima registrada fora do pico (kW cobrado).',
+  'Energia Reativa Ponta': 'Energia reativa excedente no pico — penalidade por fator de potência baixo.',
+  'Energia Reativa FPonta': 'Energia reativa excedente fora do pico — penalidade por fator de potência baixo.',
+  'DMCR Ponta': 'Demanda Máxima Contratada Registrada no pico — ultrapassagem do limite contratado.',
+  'DMCR Fora Ponta': 'Demanda Máxima Contratada Registrada fora do pico — ultrapassagem contratada.',
+  'ERE Ponta': 'Energia de Referência de Eficiência no pico — encargo regulatório de eficiência.',
+  'ERE Fora Ponta': 'Energia de Referência de Eficiência fora do pico — encargo regulatório.',
+  'Energia inj ativa f ponta': 'Energia injetada na rede (geração solar/GD) fora do pico — gera crédito.',
+  'Energia Inj. Ponta': 'Energia injetada na rede no horário de pico — gera crédito a compensar.',
+  'Retenção PIS / PASEP': 'Valor retido na fonte de PIS/PASEP — reduz o total a pagar.',
+  'Juros de Mora': 'Juros por atraso no pagamento da fatura anterior.',
+  'Multa': 'Multa por atraso no pagamento da fatura.',
+  'Contribuição de Ilum. Pública': 'Taxa municipal obrigatória para manutenção da iluminação pública.',
+};
+
+function renderMTItemsTable(b) {
+  const tbody = document.getElementById('mt-items-tbody');
+  if (!b.itens || !b.itens.length) {
+    // fallback: build from structured data
+    const rows = buildItemsFromStructured(b);
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" class="text-center text-neutral-600 py-8 text-sm">Itens não disponíveis</td></tr>'; return; }
+    tbody.innerHTML = rows.map(row => renderItemRow(row)).join('');
+    return;
+  }
+  tbody.innerHTML = b.itens.map(item => {
+    const desc = item.descricao || MT_DESCRIPTIONS[item.nome] || item.nome;
+    const isNeg = parseFloat(item.valor) < 0;
+    const typeColors = { energia:'bg-primary/10 text-primary', demanda:'bg-blue-500/10 text-blue-400', reativa:'bg-tertiary/10 text-tertiary', encargo:'bg-error/10 text-error', desconto:'bg-secondary/10 text-secondary', imposto:'bg-neutral-700 text-neutral-400', geracao:'bg-secondary/10 text-secondary' };
+    const tc = typeColors[item.tipo] || 'bg-neutral-800 text-neutral-400';
+    return `<tr>
+      <td class="px-4 py-3">
+        <span class="font-bold text-neutral-200 text-sm">${item.nome || '—'}</span>
+        <span class="ml-2 text-[9px] px-2 py-0.5 rounded ${tc} font-bold uppercase label-with-tip">${TIPO_LABELS[item.tipo] || item.tipo || 'Item'}${tipHtml(TIPO_HELP[item.tipo] || 'tipoEnergia', 'tip-below')}</span>
+      </td>
+      <td class="px-4 py-3 text-xs text-neutral-400 max-w-xs">${desc}</td>
+      <td class="px-4 py-3 text-right font-mono text-sm">${parseFloat(item.consumo||0).toLocaleString('pt-BR')}</td>
+      <td class="px-4 py-3 text-right text-xs text-neutral-500">${item.unidade || '—'}</td>
+      <td class="px-4 py-3 text-right font-mono text-xs text-neutral-400">${item.tarifa ? parseFloat(item.tarifa).toFixed(8) : '—'}</td>
+      <td class="px-4 py-3 text-right font-bold ${isNeg ? 'text-secondary' : 'text-on-surface'}">${isNeg ? '-' : ''}R$ ${fmtR(Math.abs(parseFloat(item.valor||0)))}</td>
+    </tr>`;
+  }).join('');
+}
+
+function buildItemsFromStructured(b) {
+  const rows = [];
+  if (b.energiaAtiva?.ponta_kWh) rows.push({ nome:'Energia Ativa Ponta', consumo:b.energiaAtiva.ponta_kWh, unidade:'kWh', valor:b.energiaAtiva.valorPonta, tipo:'energia' });
+  if (b.energiaAtiva?.foraPonta_kWh) rows.push({ nome:'Energia Ativa Fora Ponta', consumo:b.energiaAtiva.foraPonta_kWh, unidade:'kWh', valor:b.energiaAtiva.valorForaPonta, tipo:'energia' });
+  if (b.demanda?.medidaPonta_kW) rows.push({ nome:'Demanda Máxima Ponta', consumo:b.demanda.medidaPonta_kW, unidade:'kW', valor:b.demanda.valorPonta, tipo:'demanda' });
+  if (b.demanda?.medidaFPonta_kW) rows.push({ nome:'Demanda Máxima FPonta', consumo:b.demanda.medidaFPonta_kW, unidade:'kW', valor:b.demanda.valorFPonta, tipo:'demanda' });
+  if (b.energiaReativa?.ponta_kVAh) rows.push({ nome:'Energia Reativa Ponta', consumo:b.energiaReativa.ponta_kVAh, unidade:'kVAh', valor:b.energiaReativa.valorPonta, tipo:'reativa' });
+  if (b.energiaReativa?.foraPonta_kVAh) rows.push({ nome:'Energia Reativa FPonta', consumo:b.energiaReativa.foraPonta_kVAh, unidade:'kVAh', valor:b.energiaReativa.valorForaPonta, tipo:'reativa' });
+  if (b.DMCR?.ponta_kW) rows.push({ nome:'DMCR Ponta', consumo:b.DMCR.ponta_kW, unidade:'kW', valor:b.DMCR.valorPonta, tipo:'encargo' });
+  if (b.DMCR?.foraPonta_kW) rows.push({ nome:'DMCR Fora Ponta', consumo:b.DMCR.foraPonta_kW, unidade:'kW', valor:b.DMCR.valorForaPonta, tipo:'encargo' });
+  if (b.ERE?.ponta_kWh) rows.push({ nome:'ERE Ponta', consumo:b.ERE.ponta_kWh, unidade:'kWh', valor:b.ERE.valorPonta, tipo:'encargo' });
+  if (b.ERE?.foraPonta_kWh) rows.push({ nome:'ERE Fora Ponta', consumo:b.ERE.foraPonta_kWh, unidade:'kWh', valor:b.ERE.valorForaPonta, tipo:'encargo' });
+  if (b.geracaoDistribuida?.injetadaFPonta_kWh) rows.push({ nome:'Energia Inj. FPonta', consumo:b.geracaoDistribuida.injetadaFPonta_kWh, unidade:'kWh', valor:-(b.geracaoDistribuida.creditoFPonta||0), tipo:'geracao' });
+  if (b.impostos?.CIP) rows.push({ nome:'Contrib. Iluminação Pública', consumo:0, unidade:'—', valor:b.impostos.CIP, tipo:'imposto' });
+  if (b.impostos?.jurosMora) rows.push({ nome:'Juros de Mora', consumo:0, unidade:'—', valor:b.impostos.jurosMora, tipo:'encargo' });
+  if (b.impostos?.multaMora) rows.push({ nome:'Multa de Mora', consumo:0, unidade:'—', valor:b.impostos.multaMora, tipo:'encargo' });
+  if (b.impostos?.retencaoPIS) rows.push({ nome:'Retenção PIS/PASEP', consumo:0, unidade:'—', valor:-(b.impostos.retencaoPIS||0), tipo:'desconto' });
+  return rows;
+}
+
+function renderItemRow(item) {
+  const desc = MT_DESCRIPTIONS[item.nome] || item.nome;
+  const isNeg = parseFloat(item.valor) < 0;
+  const typeColors = { energia:'bg-primary/10 text-primary', demanda:'bg-blue-500/10 text-blue-400', reativa:'bg-tertiary/10 text-tertiary', encargo:'bg-error/10 text-error', desconto:'bg-secondary/10 text-secondary', imposto:'bg-neutral-700 text-neutral-400', geracao:'bg-secondary/10 text-secondary' };
+  const tc = typeColors[item.tipo] || 'bg-neutral-800 text-neutral-400';
+  return `<tr>
+    <td class="px-4 py-3">
+      <span class="font-bold text-neutral-200 text-sm">${item.nome}</span>
+      <span class="ml-2 text-[9px] px-2 py-0.5 rounded ${tc} font-bold uppercase label-with-tip">${TIPO_LABELS[item.tipo] || item.tipo}${tipHtml(TIPO_HELP[item.tipo] || 'tipoEnergia', 'tip-below')}</span>
+    </td>
+    <td class="px-4 py-3 text-xs text-neutral-400 max-w-xs">${desc}</td>
+    <td class="px-4 py-3 text-right font-mono text-sm">${parseFloat(item.consumo||0).toLocaleString('pt-BR')}</td>
+    <td class="px-4 py-3 text-right text-xs text-neutral-500">${item.unidade}</td>
+    <td class="px-4 py-3 text-right text-xs text-neutral-400">—</td>
+    <td class="px-4 py-3 text-right font-bold ${isNeg ? 'text-secondary' : 'text-on-surface'}">${isNeg ? '-' : ''}R$ ${fmtR(Math.abs(parseFloat(item.valor||0)))}</td>
+  </tr>`;
+}
+
+function renderMTTaxes(b) {
+  const imp = b.impostos || {};
+  const impostos = [
+    { label: 'ICMS (embutido na tarifa)', help: 'taxICMS', desc: 'Imposto estadual incluído nas tarifas de energia', val: imp.ICMS || 0 },
+    { label: 'PIS/COFINS (embutido)', help: 'taxPISCOFINS', desc: 'Tributos federais incluídos na tarifa regulada', val: (imp.PIS_fatura || 0) + (imp.COFINS_fatura || 0) },
+    { label: 'Contrib. Iluminação Pública (CIP)', help: 'taxCIP', desc: 'Taxa municipal — classificada como imposto/taxa', val: imp.CIP || 0 },
+  ].filter(t => t.val > 0);
+
+  const retencoes = [
+    { label: 'Retenção PIS/PASEP', help: 'taxRetPIS', desc: 'Abatimento — classificado como desconto na tabela', val: imp.retencaoPIS || 0 },
+    { label: 'Retenção COFINS', help: 'taxRetCOFINS', desc: 'Abatimento — classificado como desconto na tabela', val: imp.retencaoCOFINS || 0 },
+    { label: 'Retenção CSLL', help: 'taxRetCSLL', desc: 'Abatimento — classificado como desconto na tabela', val: imp.retencaoCSLL || 0 },
+    { label: 'Retenção IRRF', help: 'taxRetIRRF', desc: 'Abatimento — classificado como desconto na tabela', val: imp.retencaoIRRF || 0 },
+  ].filter(t => t.val > 0);
+
+  const encargos = [
+    { label: 'Juros de Mora', help: 'taxJuros', desc: 'Penalidade por atraso — classificado como encargo', val: imp.jurosMora || 0 },
+    { label: 'Multa de Mora', help: 'taxMulta', desc: 'Penalidade por atraso — classificado como encargo', val: imp.multaMora || 0 },
+  ].filter(t => t.val > 0);
+
+  const el = document.getElementById('mt-taxes-list');
+  const sections = [
+    { title: 'Impostos e Taxas', titleHelp: 'secImpostosTaxas', items: impostos, credit: false },
+    { title: 'Retenções (Descontos)', titleHelp: 'secRetencoes', items: retencoes, credit: true },
+    { title: 'Encargos por Atraso', titleHelp: 'secEncargosAtraso', items: encargos, credit: false },
+  ].filter(s => s.items.length);
+
+  if (!sections.length) { el.innerHTML = '<p class="text-xs text-neutral-600">Nenhum imposto/encargo extraído.</p>'; return; }
+
+  el.innerHTML = sections.map(sec => `
+    <p class="text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-2 mt-3 first:mt-0 label-with-tip">${sec.title}${tipHtml(sec.titleHelp, 'tip-below')}</p>
+    ${sec.items.map(t => `
+    <div class="p-3 rounded-lg ${sec.credit ? 'bg-secondary/5 border border-secondary/10' : 'bg-surface-container-highest'}">
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex-1">
+          <p class="text-xs font-bold ${sec.credit ? 'text-secondary' : 'text-neutral-300'} label-with-tip">${t.label}${tipHtml(t.help, 'tip-below')}</p>
+          <p class="text-[10px] text-neutral-500 mt-0.5 leading-relaxed">${t.desc}</p>
+        </div>
+        <span class="text-sm font-bold ${sec.credit ? 'text-secondary' : 'text-error'} whitespace-nowrap">${sec.credit ? '-' : '+'}R$ ${fmtR(t.val)}</span>
+      </div>
+    </div>`).join('')}`).join('');
+}
+
+function renderMTGD(b) {
+  const gd = b.geracaoDistribuida || {};
+  const el = document.getElementById('mt-gd-list');
+  const injP = parseFloat(gd.injetadaPonta_kWh) || 0;
+  const injFP = parseFloat(gd.injetadaFPonta_kWh) || 0;
+  const saldoP = parseFloat(gd.saldoPonta_kWh) || 0;
+  const saldoFP = parseFloat(gd.saldoFPonta_kWh) || 0;
+  const saldoTotal = parseFloat(gd.saldoTotal_kWh) || 0;
+  const participacao = parseFloat(gd.participacaoSaldo_pct) || 0;
+
+  if (!injP && !injFP && !saldoTotal) {
+    el.innerHTML = '<p class="text-xs text-neutral-600">Sem dados de geração distribuída nesta fatura.</p>'; return;
+  }
+
+  const gdItems = [
+    { label: 'Energia Injetada Ponta', help: 'gdInjPonta', desc: 'kWh gerados e injetados na rede no horário de pico', val: injP, unit: 'kWh' },
+    { label: 'Energia Injetada Fora Ponta', help: 'gdInjFPonta', desc: 'kWh gerados e injetados na rede fora do pico', val: injFP, unit: 'kWh' },
+    { label: 'Saldo Ponta Atualizado', help: 'gdSaldoPonta', desc: 'Créditos de energia acumulados no horário de pico', val: saldoP, unit: 'kWh' },
+    { label: 'Saldo Fora Ponta Atualizado', help: 'gdSaldoFPonta', desc: 'Créditos de energia acumulados fora do pico', val: saldoFP, unit: 'kWh' },
+    { label: 'Saldo Total Acumulado', help: 'gdSaldoTotal', desc: 'Total de créditos disponíveis para compensação', val: saldoTotal, unit: 'kWh' },
+    { label: 'Participação no Saldo', help: 'gdParticipacao', desc: 'Percentual de uso do saldo de créditos neste ciclo', val: participacao, unit: '%' },
+  ].filter(g => g.val > 0);
+
+  el.innerHTML = gdItems.map(g => `
+    <div class="flex items-start justify-between p-3 rounded-lg bg-secondary/5 border border-secondary/10">
+      <div>
+        <p class="text-xs font-bold text-secondary label-with-tip">${g.label}${tipHtml(g.help, 'tip-below')}</p>
+        <p class="text-[10px] text-neutral-500 mt-0.5">${g.desc}</p>
+      </div>
+      <span class="text-sm font-bold text-secondary whitespace-nowrap ml-3">${g.val.toLocaleString('pt-BR')} ${g.unit}</span>
+    </div>`).join('');
+}
+
+function renderMTCompare() {
+  const container = document.getElementById('mt-compare-chart');
+  if (state.bills.length < 1) { container.innerHTML = '<div class="text-center text-neutral-600 text-sm w-full flex items-center justify-center h-full"><p class="text-xs">Importe múltiplas faturas para comparar</p></div>'; return; }
+
+  const bills = state.bills;
+  const maxKwh = Math.max(...bills.map(b => {
+    const p = parseFloat(b.energiaAtiva?.ponta_kWh) || 0;
+    const fp = parseFloat(b.energiaAtiva?.foraPonta_kWh) || 0;
+    return (p + fp) || b.kwh;
+  }), 1);
+
+  container.innerHTML = '';
+  bills.forEach(b => {
+    const ativa = ((parseFloat(b.energiaAtiva?.ponta_kWh)||0) + (parseFloat(b.energiaAtiva?.foraPonta_kWh)||0)) || b.kwh;
+    const reativa = (parseFloat(b.energiaReativa?.ponta_kVAh)||0) + (parseFloat(b.energiaReativa?.foraPonta_kVAh)||0);
+    const injetada = (parseFloat(b.geracaoDistribuida?.injetadaPonta_kWh)||0) + (parseFloat(b.geracaoDistribuida?.injetadaFPonta_kWh)||0);
+    const pAtiva = Math.min((ativa / maxKwh) * 100, 100);
+    const pReativa = Math.min((reativa / maxKwh) * 100, 100);
+    const pInj = Math.min((injetada / maxKwh) * 100, 100);
+
+    const div = document.createElement('div');
+    div.className = 'flex-1 flex flex-col justify-end items-center gap-1 h-full group cursor-pointer';
+    div.innerHTML = `
+      <div class="w-full relative flex items-end justify-center gap-0.5 h-full">
+        <div style="height:${pAtiva}%;min-height:3px" class="flex-1 bg-primary/70 rounded-t-sm group-hover:bg-primary transition-all" title="Energia Ativa: ${ativa.toLocaleString('pt-BR')} kWh"></div>
+        ${reativa > 0 ? `<div style="height:${pReativa}%;min-height:3px" class="flex-1 bg-error/50 rounded-t-sm group-hover:bg-error/70 transition-all" title="Reativa: ${reativa.toLocaleString('pt-BR')} kVAh"></div>` : ''}
+        ${injetada > 0 ? `<div style="height:${pInj}%;min-height:3px" class="flex-1 bg-secondary/60 rounded-t-sm group-hover:bg-secondary transition-all" title="Injetada: ${injetada.toLocaleString('pt-BR')} kWh"></div>` : ''}
+      </div>
+      <span class="text-[9px] font-bold text-neutral-500 group-hover:text-neutral-200 transition-colors mt-2">${b.mes.split('/')[0].toUpperCase()}</span>
+      <span class="text-[8px] text-neutral-700">${b.mes.split('/')[1] || ''}</span>`;
+    container.appendChild(div);
+  });
+}
+
+// ═══════════════ DASHBOARD
+function updateDashboard() {
+  const bills = state.bills;
+  if (!bills.length) return;
+  document.getElementById('kpi-total').textContent = bills.length;
+  document.getElementById('kpi-period').textContent = bills.length > 1 ? `${bills[0].mes} → ${bills[bills.length-1].mes}` : bills[0].mes;
+  const totalVal = bills.reduce((s,b)=>s+b.valor,0);
+  document.getElementById('kpi-total-val').textContent = fmtR(totalVal);
+  const avgKwh = Math.round(bills.reduce((s,b)=>s+b.kwh,0)/bills.length);
+  document.getElementById('kpi-avg-kwh').textContent = avgKwh;
+  const fines = bills.filter(b=>b.multa>0);
+  document.getElementById('kpi-fines').textContent = fines.length;
+  document.getElementById('kpi-fines-total').textContent = `R$ ${fmtR(fines.reduce((s,b)=>s+b.multa,0))} no período`;
+  if (bills.length >= 2) {
+    const l=bills[bills.length-1], p=bills[bills.length-2];
+    const diff=(l.kwh-p.kwh), pct=p.kwh?((diff/p.kwh)*100).toFixed(1):0;
+    const el=document.getElementById('mom-label');
+    el.textContent=`${diff>0?'+':''}${diff} kWh (${pct}%)`;
+    el.className=`font-bold ${diff>0?'text-error':'text-secondary'}`;
+    const bar=document.getElementById('mom-bar');
+    bar.style.width=Math.min(Math.abs(parseFloat(pct)),100)+'%';
+    bar.style.background=diff>0?'#ffb4ab':'#4ae183';
+  }
+  const wy=bills.filter(b=>b.kwhAnoPassado!=null);
+  if (wy.length) {
+    const l=wy[wy.length-1], diff=(l.kwh-l.kwhAnoPassado), pct=l.kwhAnoPassado?((diff/l.kwhAnoPassado)*100).toFixed(1):0;
+    const el=document.getElementById('yoy-label');
+    el.textContent=`${diff>0?'+':''}${diff} kWh (${pct}%)`;
+    el.className=`font-bold ${diff>0?'text-error':'text-secondary'}`;
+    const bar=document.getElementById('yoy-bar');
+    bar.style.width=Math.min(Math.abs(parseFloat(pct)),100)+'%';
+    bar.style.background=diff>0?'#ffb4ab':'#4ae183';
+  }
+  if (bills.length>=2) {
+    const l=bills[bills.length-1], p=bills[bills.length-2];
+    const diff=l.valor-p.valor, pct=p.valor?((diff/p.valor)*100).toFixed(1):0;
+    document.getElementById('kpi-val-delta').innerHTML=`<span class="material-symbols-outlined text-sm">${diff>0?'trending_up':'trending_down'}</span><span class="${diff>0?'text-error':'text-secondary'}">${diff>0?'+':''}${pct}% vs ${p.mes}</span>`;
+  }
+  renderBarChart();
+  renderRecentBills();
+}
+
+function renderBarChart() {
+  const bills = state.bills;
+  if (!bills.length) return;
+  const isKwh = state.showingKwh;
+  const values = bills.map(b=>isKwh?b.kwh:b.valor);
+  const maxV = Math.max(...values);
+  const container = document.getElementById('barChart');
+  container.innerHTML = '';
+  bills.forEach((b,i) => {
+    const v = values[i], pct = maxV>0?(v/maxV*100):0, isLast = i===bills.length-1;
+    const div = document.createElement('div');
+    div.className='flex flex-col items-center justify-end gap-2 flex-1 h-full group cursor-pointer';
+    div.innerHTML=`
+      <span class="text-[9px] font-bold ${isLast?'text-primary':'text-neutral-600'} group-hover:text-neutral-300 transition-colors">${isKwh?v:('R$'+fmtR(v))}</span>
+      <div class="w-full relative flex justify-center">
+        <div style="height:${pct}%;min-height:4px;" class="w-full rounded-t-sm transition-all duration-700 ${isLast?'bg-primary shadow-[0_0_15px_rgba(146,204,255,0.3)]':'bg-primary/25 group-hover:bg-primary/50'}"></div>
+      </div>
+      <span class="text-[9px] font-bold ${isLast?'text-neutral-200':'text-neutral-600'}">${b.mes.split('/')[0].toUpperCase()}</span>`;
+    container.appendChild(div);
+  });
+}
+
+function toggleChart() {
+  state.showingKwh = !state.showingKwh;
+  document.getElementById('toggleValBtn').textContent = state.showingKwh ? 'R$' : 'kWh';
+  renderBarChart();
+}
+
+function renderRecentBills() {
+  const bills = [...state.bills].reverse().slice(0,5);
+  const el = document.getElementById('recentBills');
+  el.innerHTML = '';
+  bills.forEach(b => {
+    const isMT = b.tipoTarifa === 'MT';
+    const div = document.createElement('div');
+    div.className='flex items-center gap-5 py-4 border-b border-neutral-800/30 last:border-0 hover:bg-neutral-800/10 transition-colors px-3 rounded-lg';
+    div.innerHTML=`
+      <div class="w-10 h-10 rounded ${isMT ? 'bg-tertiary/10' : 'bg-primary/10'} flex items-center justify-center ${isMT ? 'text-tertiary' : 'text-primary'}">
+        <span class="material-symbols-outlined text-sm">${isMT ? 'electric_bolt' : 'receipt'}</span>
+      </div>
+      <div class="flex-1">
+        <p class="text-sm font-bold">${b.mes} — ${b.distribuidora||'Distribuidora'} ${isMT ? '<span class="text-[9px] bg-tertiary/20 text-tertiary px-1.5 py-0.5 rounded font-black">MT</span>' : ''}</p>
+        <p class="text-xs text-neutral-500">${b.kwh} kWh · Venc: ${b.vencimento||'—'}</p>
+      </div>
+      <div class="text-right">
+        <p class="font-bold text-on-surface">R$ ${fmtR(b.valor)}</p>
+        ${b.multa>0?`<p class="text-xs text-error">⚠ Multa: R$ ${fmtR(b.multa)}</p>`:'<p class="text-xs text-secondary">✓ Sem multa</p>'}
+      </div>`;
+    el.appendChild(div);
+  });
+}
+
+// ═══════════════ ANÁLISE
+function updateAnalise() {
+  const bills = state.bills;
+  if (!bills.length) return;
+  const last=bills[bills.length-1];
+  document.getElementById('analise-kwh').textContent=last.kwh;
+  document.getElementById('analise-fatura-ref').textContent=`FATURA ${last.mes.toUpperCase()}`;
+  if (bills.length>=2) {
+    const prev=bills[bills.length-2], diff=last.kwh-prev.kwh, pct=prev.kwh?((diff/prev.kwh)*100).toFixed(1):0;
+    const badge=document.getElementById('variacao-badge');
+    badge.className=`px-3 py-1 rounded-full flex items-center gap-1 ${diff>0?'bg-error-container/30':'bg-secondary/10'}`;
+    badge.innerHTML=`<span class="material-symbols-outlined text-xs ${diff>0?'text-error':'text-secondary'}">${diff>0?'trending_up':'trending_down'}</span><span class="${diff>0?'text-error':'text-secondary'} text-xs font-bold">${diff>0?'+':''}${pct}%</span>`;
+    document.getElementById('analise-kwh-desc').textContent=`${diff>0?'Aumento':'Redução'} de ${Math.abs(diff)} kWh em relação a ${prev.mes}`;
+  }
+  const fines=bills.filter(b=>b.multa>0);
+  document.getElementById('analise-multa-total').textContent=fmtR(fines.reduce((s,b)=>s+b.multa,0));
+  const ml=document.getElementById('analise-multas-list');
+  if (fines.length) {
+    ml.innerHTML=fines.map(b=>`<div class="flex justify-between text-xs items-center p-2 rounded bg-surface-container-low"><span class="text-on-surface-variant">${b.mes} — ${b.motivoMulta||'Multa'}</span><span class="font-bold text-tertiary">R$ ${fmtR(b.multa)}</span></div>`).join('');
+  } else {
+    ml.innerHTML='<p class="text-xs text-secondary">✓ Nenhuma multa detectada.</p>';
+  }
+  const tl=document.getElementById('analise-timeline');
+  tl.innerHTML=[...bills].reverse().slice(0,6).map(b=>`
+    <div class="flex items-center gap-3">
+      <div class="w-2 h-2 rounded-full bg-primary flex-shrink-0"></div>
+      <div class="flex-1">
+        <div class="flex justify-between"><span class="text-xs font-bold">${b.mes}</span><span class="text-xs text-neutral-500">${b.kwh} kWh</span></div>
+        <div class="w-full h-1 bg-surface-container-highest rounded-full mt-1 overflow-hidden">
+          <div class="h-full bg-primary/50 rounded-full" style="width:${Math.min((b.kwh/(Math.max(...state.bills.map(x=>x.kwh))||1))*100,100)}%"></div>
+        </div>
+      </div>
+    </div>`).join('');
+  renderYoYChart();
+}
+
+function renderYoYChart() {
+  const wy=state.bills.filter(b=>b.kwhAnoPassado!=null);
+  const cont=document.getElementById('yoyChart');
+  if (!wy.length) { cont.innerHTML='<div class="text-center text-neutral-600 text-sm w-full flex items-center justify-center h-full"><p class="text-xs">Dados do ano anterior não disponíveis</p></div>'; return; }
+  const maxV=Math.max(...wy.flatMap(b=>[b.kwh,b.kwhAnoPassado||0]));
+  cont.innerHTML='';
+  wy.forEach(b=>{
+    const div=document.createElement('div');
+    div.className='flex-1 flex flex-col justify-end gap-1 h-full group';
+    const pCur=maxV>0?(b.kwh/maxV*100):0, pPrev=maxV>0?((b.kwhAnoPassado||0)/maxV*100):0;
+    div.innerHTML=`
+      <div class="relative w-full h-full flex items-end justify-center gap-1">
+        <div style="height:${pPrev}%;min-height:2px" class="w-full bg-outline-variant/30 rounded-t-sm"></div>
+        <div style="height:${pCur}%;min-height:2px" class="w-full bg-primary/80 rounded-t-sm"></div>
+      </div>
+      <span class="text-[10px] text-on-surface-variant text-center mt-4">${b.mes.split('/')[0].toUpperCase()}</span>`;
+    cont.appendChild(div);
+  });
+}
+
+// ═══════════════ HISTÓRICO
+function updateHistorico() {
+  const tbody=document.getElementById('historicoBody');
+  if (!state.bills.length) return;
+  tbody.innerHTML=[...state.bills].reverse().map((b,i,arr)=>{
+    const prev=arr[i+1];
+    let momHtml='<span class="text-neutral-600">—</span>';
+    if (prev) { const d=b.kwh-prev.kwh, p=prev.kwh?((d/prev.kwh)*100).toFixed(1):0; momHtml=`<div class="flex items-center gap-1 ${d>0?'text-error':'text-secondary'}"><span class="material-symbols-outlined text-sm">${d>0?'trending_up':'trending_down'}</span><span class="font-bold">${d>0?'+':''}${p}%</span></div>`; }
+    let yoyHtml='<span class="text-neutral-600">—</span>';
+    if (b.kwhAnoPassado) { const d=b.kwh-b.kwhAnoPassado, p=b.kwhAnoPassado?((d/b.kwhAnoPassado)*100).toFixed(1):0; yoyHtml=`<div class="flex items-center gap-1 ${d>0?'text-error':'text-secondary'}"><span class="font-bold">${d>0?'+':''}${p}%</span></div>`; }
+    const isMT = b.tipoTarifa === 'MT';
+    return `<tr class="hover:bg-surface-container-highest/30 transition-colors">
+      <td class="px-8 py-5"><span class="font-headline font-bold text-lg">${b.mes}</span>${isMT?'<span class="ml-2 text-[9px] bg-tertiary/20 text-tertiary px-1.5 py-0.5 rounded font-black">MT</span>':''}</td>
+      <td class="px-8 py-5"><div class="flex items-center gap-2"><span class="text-xl font-headline">${b.kwh}</span><span class="text-[10px] text-on-surface-variant">kWh</span></div></td>
+      <td class="px-8 py-5">${momHtml}</td>
+      <td class="px-8 py-5">${yoyHtml}</td>
+      <td class="px-8 py-5 text-right font-bold font-headline">${fmtR(b.valor)}</td>
+      <td class="px-8 py-5">${b.multa>0?`<span class="text-error font-bold text-sm">R$ ${fmtR(b.multa)}</span>`:'<span class="text-secondary text-sm">—</span>'}</td>
+      <td class="px-8 py-5"><span class="text-xs font-bold ${bandeiraColor(b.bandeira)}">${bandeiraLabel(b.bandeira)}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════ ALERTAS
+function updateAlertas() {
+  const fines=state.bills.filter(b=>b.multa>0);
+  const el=document.getElementById('alertsContent');
+  if (!fines.length) { el.innerHTML=`<div class="bg-surface-container-low rounded-xl p-12 text-center"><span class="material-symbols-outlined text-4xl block mb-3 text-secondary">check_circle</span><p class="text-sm text-secondary font-bold">Nenhuma multa detectada!</p><p class="text-xs text-neutral-600 mt-1">${state.bills.length} fatura(s) sem irregularidades.</p></div>`; return; }
+  el.innerHTML=`<div class="bg-error-container/10 border border-error/20 rounded-xl p-5 mb-6 flex items-center gap-4"><span class="material-symbols-outlined text-error text-3xl">warning</span><div><h3 class="font-bold text-error">${fines.length} fatura(s) com multas ou juros</h3><p class="text-xs text-neutral-400">Total: R$ ${fmtR(fines.reduce((s,b)=>s+b.multa,0))}</p></div></div>
+  <div class="space-y-4">${fines.map(b=>`<div class="bg-surface-container-low rounded-xl p-6 border border-error/10 flex items-start gap-5"><div class="w-12 h-12 rounded-xl bg-error/10 flex items-center justify-center"><span class="material-symbols-outlined text-error filled-icon">receipt_long</span></div><div class="flex-1"><div class="flex justify-between items-start"><div><h4 class="font-bold font-headline text-lg">${b.mes}</h4><p class="text-xs text-neutral-500">${b.distribuidora||'Distribuidora'}</p></div><span class="text-2xl font-bold font-headline text-error">R$ ${fmtR(b.multa)}</span></div><div class="mt-3 p-3 bg-surface-container rounded-lg"><p class="text-xs text-on-surface-variant"><span class="font-bold">Motivo:</span> ${b.motivoMulta||'Multa/juros não especificados'}</p></div></div></div>`).join('')}</div>`;
+}
+
+// ═══════════════ CHAT PANEL
+function updateChatPanel() {
+  const list=document.getElementById('chatBillList');
+  if (!state.bills.length) { list.innerHTML='<p class="text-xs text-neutral-600 py-2 text-center">Nenhuma fatura ainda</p>'; return; }
+  list.innerHTML=state.bills.map(b=>`
+    <div class="flex items-center gap-2 py-2 border-b border-outline-variant/10 last:border-0">
+      <span class="w-1.5 h-1.5 rounded-full ${b.multa>0?'bg-error':b.tipoTarifa==='MT'?'bg-tertiary':'bg-secondary'} flex-shrink-0"></span>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-bold text-on-surface">${b.mes} ${b.tipoTarifa==='MT'?'<span style="font-size:8px;color:#eec209">[MT]</span>':''}</p>
+        <p class="text-[10px] text-neutral-600">${b.kwh} kWh · R$ ${fmtR(b.valor)}</p>
+      </div>
+    </div>`).join('');
+  const sum=document.getElementById('chatSummary');
+  const totalV=state.bills.reduce((s,b)=>s+b.valor,0);
+  const avgK=Math.round(state.bills.reduce((s,b)=>s+b.kwh,0)/state.bills.length);
+  const fines=state.bills.filter(b=>b.multa>0);
+  const mtCount=state.bills.filter(b=>b.tipoTarifa==='MT').length;
+  sum.innerHTML=`
+    <div class="flex justify-between text-xs"><span class="text-neutral-500">Faturas</span><span class="font-bold">${state.bills.length}</span></div>
+    <div class="flex justify-between text-xs"><span class="text-neutral-500">Faturas MT</span><span class="font-bold text-tertiary">${mtCount}</span></div>
+    <div class="flex justify-between text-xs"><span class="text-neutral-500">Total pago</span><span class="font-bold">R$ ${fmtR(totalV)}</span></div>
+    <div class="flex justify-between text-xs"><span class="text-neutral-500">Média kWh</span><span class="font-bold">${avgK} kWh</span></div>
+    <div class="flex justify-between text-xs"><span class="text-neutral-500">Multas</span><span class="font-bold ${fines.length?'text-error':'text-secondary'}">${fines.length} fatura(s)</span></div>`;
+}
+
+// ═══════════════ CHAT
+const CHAT_SYSTEM = `Você é o IFES AI, assistente especialista em contas de energia elétrica brasileira (baixa e média tensão / Grupo A).
+
+Responda sempre em português claro, como se falasse com alguém leigo.
+Regras importantes:
+- Dê respostas COMPLETAS e úteis — explique o suficiente para a dúvida ficar resolvida.
+- Use os dados reais das faturas importadas (valores, meses, itens, impostos) quando disponíveis.
+- Estruture com parágrafos curtos, listas ou tópicos quando ajudar a leitura.
+- Para perguntas complexas, detalhe sem problemas — não resuma demais.
+- Se faltar dado, diga o que falta e sugira importar a fatura em PDF.
+- Não invente valores: use apenas os dados fornecidos.`;
+
+const MAX_CHAT_TURNS = 24;
+
+function buildChatContext() {
+  if (!state.bills.length) return 'Nenhuma fatura importada ainda.';
+  return state.bills.map(b => ({
+    mes: b.mes,
+    distribuidora: b.distribuidora,
+    tipoTarifa: b.tipoTarifa,
+    subgrupo: b.subgrupo,
+    kwh: b.kwh,
+    valor: b.valor,
+    multa: b.multa,
+    motivoMulta: b.motivoMulta,
+    bandeira: b.bandeira,
+    vencimento: b.vencimento,
+    energiaAtiva: b.energiaAtiva,
+    demanda: b.demanda,
+    energiaReativa: b.energiaReativa,
+    geracaoDistribuida: b.geracaoDistribuida,
+    impostos: b.impostos,
+    DMCR: b.DMCR,
+    ERE: b.ERE,
+    itens: (b.itens || []).slice(0, 15).map(i => ({
+      nome: i.nome, descricao: i.descricao, tipo: i.tipo, consumo: i.consumo, unidade: i.unidade, valor: i.valor
+    }))
+  }));
+}
+
+function formatChatReply(text) {
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br>');
+}
+
+function addChatMsg(role, html) {
+  const c=document.getElementById('chatMessages');
+  const div=document.createElement('div');
+  const isUser=role==='user';
+  div.className=`flex gap-4 items-start msg-enter ${isUser?'flex-row-reverse max-w-[90%] ml-auto':'max-w-[90%]'}`;
+  div.innerHTML=`
+    <div class="w-9 h-9 rounded-lg ${isUser?'bg-primary-container':'bg-surface-container-highest'} flex items-center justify-center shrink-0">
+      <span class="material-symbols-outlined ${isUser?'text-on-primary-container':'text-secondary'} filled-icon text-sm">${isUser?'person':'auto_awesome'}</span>
+    </div>
+    <div class="${isUser?'bg-primary-container/10 border border-primary-container/20 rounded-xl rounded-tr-none':'bg-surface-container-low rounded-xl rounded-tl-none'} p-5 max-w-full">
+      <div class="text-on-surface text-sm leading-relaxed chat-msg-body">${html}</div>
+    </div>`;
+  c.appendChild(div);
+  c.scrollTop=c.scrollHeight;
+}
+
+async function sendChat() {
+  const input=document.getElementById('chatInput');
+  const txt=input.value.trim();
+  if (!txt) return;
+  input.value='';
+  addChatMsg('user', formatChatReply(txt));
+  state.chatHistory.push({ role: 'user', text: txt });
+  if (state.chatHistory.length > MAX_CHAT_TURNS * 2) {
+    state.chatHistory = state.chatHistory.slice(-MAX_CHAT_TURNS * 2);
+  }
+
+  document.getElementById('typingIndicator').classList.remove('hidden');
+  document.getElementById('chatMessages').scrollTop=99999;
+
+  const contents = state.chatHistory.map(m => ({
+    role: m.role === 'user' ? 'user' : 'model',
+    parts: [{ text: m.text }]
+  }));
+
+  const systemInstruction = CHAT_SYSTEM + '\n\nDados das faturas importadas:\n' + JSON.stringify(buildChatContext(), null, 2);
+
+  try {
+    const result = await callGemini(contents, null, {
+      systemInstruction,
+      temperature: 0.7,
+      maxOutputTokens: 8192,
+      thinkingBudget: 2048,
+      throwOnTruncated: false
+    });
+    let reply = typeof result === 'object' ? result.text : result;
+    if (!reply) throw new Error('Resposta vazia da IA.');
+    if (result?.truncated) {
+      reply += '\n\n_(A resposta foi cortada no limite — diga "continue" ou faça uma pergunta mais específica.)_';
+    }
+    state.chatHistory.push({ role: 'model', text: reply });
+    document.getElementById('typingIndicator').classList.add('hidden');
+    addChatMsg('ai', formatChatReply(reply));
+  } catch(err) {
+    document.getElementById('typingIndicator').classList.add('hidden');
+    state.chatHistory.pop();
+    addChatMsg('ai', `❌ Erro: ${err.message}`);
+  }
+}
+
+function quickPrompt(txt) { document.getElementById('chatInput').value=txt; sendChat(); }
+function clearChat() {
+  state.chatHistory = [];
+  const c=document.getElementById('chatMessages');
+  c.innerHTML=`<div class="flex gap-4 items-start max-w-[85%] msg-enter"><div class="w-9 h-9 rounded-lg bg-surface-container-highest flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-secondary filled-icon text-sm">auto_awesome</span></div><div class="bg-surface-container-low p-5 rounded-xl rounded-tl-none"><div class="text-on-surface text-sm leading-relaxed">Chat limpo! Como posso ajudar?</div></div></div>`;
+}
+
+// ═══════════════ INSIGHT
+async function generateInsight() {
+  if (!state.bills.length) { alert('Importe faturas primeiro!'); return; }
+  const btn=document.querySelector('[onclick="generateInsight()"]');
+  btn.disabled=true; btn.textContent='Analisando...';
+  document.getElementById('insight-title').textContent='Gerando análise com Gemini...';
+  try {
+    const prompt=`Analise estes dados de contas de energia elétrica brasileira e gere um insight executivo. Responda em português.
+Dados: ${JSON.stringify(buildChatContext())}
+Formato:
+TITULO: [título em até 8 palavras]
+TEXTO: [recomendação em 2-3 frases usando dados concretos]`;
+    const raw=await callGemini(prompt, null, { temperature: 0.6, maxOutputTokens: 2048, thinkingBudget: 1024 });
+    const tLine=raw.match(/TITULO:\s*(.+)/i);
+    const txLine=raw.match(/TEXTO:\s*([\s\S]+)/i);
+    document.getElementById('insight-title').textContent=tLine?tLine[1].trim():'Análise Concluída';
+    document.getElementById('insight-text').textContent=txLine?txLine[1].trim():raw;
+  } catch(err) {
+    document.getElementById('insight-title').textContent='Erro na análise';
+    document.getElementById('insight-text').textContent=err.message;
+  }
+  btn.disabled=false; btn.innerHTML='<span class="material-symbols-outlined text-sm">auto_fix_high</span> Regerar';
+}
+
+// ═══════════════ ANALÍTICO — OTIMIZAÇÃO DE DEMANDA
+const IFES_LOGO_URL = 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Ifes_Logo.svg';
+const SIM_DEFAULTS = { overMult: 2, tolerance: 0.05, techMargin: 0.03 };
+const IA_TOLERANCIA = 0.10; // 10% acima da contratada = sem multa de ultrapassagem
+
+function toggleAnalSwitch(id) {
+  const el = document.getElementById(id);
+  el.classList.toggle('on');
+  el.setAttribute('aria-checked', el.classList.contains('on') ? 'true' : 'false');
+}
+
+function parseDecimalInput(v) {
+  if (v == null || v === '') return null;
+  return parseFloat(String(v).replace(',', '.'));
+}
+
+function mesToCompetencia(mes) {
+  const mo = { jan:1, fev:2, mar:3, abr:4, mai:5, jun:6, jul:7, ago:8, set:9, out:10, nov:11, dez:12 };
+  const p = (mes || '').toLowerCase().split('/');
+  const m = mo[p[0]] || 1;
+  return `${p[1] || '0000'}-${String(m).padStart(2, '0')}`;
+}
+
+function fmtKw(v) { return `${Math.round(v)} kW`; }
+function fmtMoney(v) { return `R$ ${Math.round(v).toLocaleString('pt-BR')}`; }
+function fmtMoneyFull(v) { return `R$ ${fmtR(v)}`; }
+
+function getDemandaMedidaTotal(b) {
+  const d = b.demanda || {};
+  const medP = parseFloat(d.medidaPonta_kW) || 0;
+  const medFP = parseFloat(d.medidaFPonta_kW) || 0;
+  return Math.max(medP + medFP, medP, medFP);
+}
+
+function getDemandaContratadaTotal(b) {
+  const d = b.demanda || {};
+  const conP = parseFloat(d.contratadaPonta_kW) || 0;
+  const conFP = parseFloat(d.contratadaFPonta_kW) || 0;
+  const sum = conP + conFP;
+  if (sum > 0) return sum;
+  return getDemandaMedidaTotal(b);
+}
+
+function billHasDemandData(b) {
+  return getDemandaMedidaTotal(b) > 0 || getDemandaContratadaTotal(b) > 0;
+}
+
+function extractDemandMonth(b) {
+  const medida = getDemandaMedidaTotal(b);
+  const contratada = getDemandaContratadaTotal(b);
+  const valDem = (parseFloat(b.demanda?.valorPonta) || 0) + (parseFloat(b.demanda?.valorFPonta) || 0);
+  const dmcr = (parseFloat(b.DMCR?.valorPonta) || 0) + (parseFloat(b.DMCR?.valorForaPonta) || 0);
+  const tarifaKw = medida > 0 ? valDem / medida : (contratada > 0 && valDem > 0 ? valDem / contratada : 0);
+  return {
+    mes: b.mes,
+    competencia: mesToCompetencia(b.mes),
+    medida,
+    contratada,
+    valDem,
+    dmcr,
+    tarifaKw: tarifaKw || 0,
+    valorTotal: parseFloat(b.valor) || 0,
+    distribuidora: b.distribuidora || '—',
+    fileName: b.fileName || 'pdf'
+  };
+}
+
+function percentile(arr, p) {
+  if (!arr.length) return 0;
+  const sorted = [...arr].sort((a, b) => a - b);
+  const idx = (p / 100) * (sorted.length - 1);
+  const lo = Math.floor(idx), hi = Math.ceil(idx);
+  if (lo === hi) return sorted[lo];
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+}
+
+function simulateDemandCost(months, D, params) {
+  let totalCost = 0;
+  let demandCostSum = 0;
+  let overCostSum = 0;
+  let baseSum = 0;
+  let overMonths = 0;
+  let riskScore = 0;
+  for (const m of months) {
+    const tarifa = m.tarifaKw || params.avgTarifa;
+    const base = Math.max(0, m.valorTotal - m.valDem - m.dmcr);
+    const demandCost = D * tarifa;
+    const limit = D * (1 + params.tolerance);
+    let overCost = 0;
+    if (m.medida > limit) {
+      overMonths++;
+      const excess = m.medida - limit;
+      overCost = excess * tarifa * params.overMult;
+      riskScore += excess * tarifa;
+    }
+    baseSum += base;
+    demandCostSum += demandCost;
+    overCostSum += overCost;
+    totalCost += base + demandCost + overCost;
+  }
+  const n = months.length || 1;
+  return {
+    D, totalCost, annualized: (totalCost / n) * 12, overMonths, riskScore, avgMonthly: totalCost / n,
+    demandCostSum, overCostSum, baseSum
+  };
+}
+
+function findOptimalDemand(months, params) {
+  const medidas = months.map(m => m.medida);
+  const maxM = Math.max(...medidas, 1);
+  const maxD = Math.ceil(Math.max(...months.map(m => m.contratada), maxM * 1.05));
+  const minD = Math.max(1, Math.floor(Math.min(...medidas) * 0.6));
+  let best = null;
+  for (let D = minD; D <= maxD; D += params.sweepStep) {
+    const s = simulateDemandCost(months, D, params);
+    if (!best || s.totalCost < best.totalCost) best = s;
+  }
+  return best;
+}
+
+function findAggressiveDemand(months, params) {
+  const medidas = months.map(m => m.medida);
+  const maxM = Math.max(...medidas, 1);
+  const maxD = Math.ceil(Math.max(...months.map(m => m.contratada), maxM * 1.05));
+  const minD = Math.max(1, Math.floor(Math.min(...medidas) * 0.6));
+  let best = null;
+  for (let D = minD; D <= maxD; D += params.sweepStep) {
+    const s = simulateDemandCost(months, D, params);
+    if (s.overMonths > params.maxOverMonths) continue;
+    if (!best || s.totalCost < best.totalCost) best = s;
+  }
+  return best || findOptimalDemand(months, params);
+}
+
+function getSimulationParams() {
+  return {
+    overMult: SIM_DEFAULTS.overMult,
+    tolerance: SIM_DEFAULTS.tolerance,
+    techMargin: SIM_DEFAULTS.techMargin,
+    maxOverMonths: parseInt(document.getElementById('anal-max-over')?.value, 10) || 2,
+    sweepStep: parseInt(document.getElementById('anal-passo')?.value, 10) || 1,
+    acceptPrelim: document.getElementById('anal-toggle-prelim')?.classList.contains('on'),
+    mesesFilter: document.getElementById('anal-meses')?.value || 'all'
+  };
+}
+
+function getDemandMonths() {
+  let bills = state.bills.filter(b => (b.tipoTarifa === 'MT' || billHasDemandData(b)) && billHasDemandData(b));
+  bills = [...bills].sort((a, b) => parseMonthYear(a.mes) - parseMonthYear(b.mes));
+  const params = getSimulationParams();
+  if (params.mesesFilter === '12') bills = bills.slice(-12);
+  else if (params.mesesFilter === '24') bills = bills.slice(-24);
+  return bills.map(extractDemandMonth).filter(m => m.medida > 0 || m.contratada > 0);
+}
+
+function computeIARecommendation(months, params, contratadaAtual) {
+  const medidas = months.map(m => m.medida);
+  const maxP = Math.max(...medidas);
+  const minP = Math.min(...medidas);
+  const step = params.sweepStep || 1;
+  const paramsIA = { ...params, tolerance: IA_TOLERANCIA };
+
+  const minSemMulta = Math.ceil(maxP / (1 + IA_TOLERANCIA));
+  let D = Math.max(minSemMulta, Math.ceil(maxP * 1.013));
+  D = Math.ceil(D / step) * step;
+
+  const limiteSemMulta = D * (1 + IA_TOLERANCIA);
+  const excessoContratado = Math.max(0, contratadaAtual - D);
+  const simAtual = simulateDemandCost(months, contratadaAtual, params);
+  const simIA = simulateDemandCost(months, D, paramsIA);
+  const n = months.length || 1;
+  const economiaAnual = simAtual.annualized - simIA.annualized;
+  const economiaDemandaAnual = (simAtual.demandCostSum - simIA.demandCostSum) * (12 / n);
+  const semMultaNoPico = maxP <= limiteSemMulta;
+  const multaAnualEst = simIA.overCostSum * (12 / n);
+
+  const narrative = buildIANarrative({
+    D, maxP, minP, contratadaAtual, limiteSemMulta, excessoContratado,
+    economiaAnual, economiaDemandaAnual, semMultaNoPico, multaAnualEst, simIA
+  });
+
+  return {
+    D, maxP, minP, limiteSemMulta, excessoContratado, economiaAnual, economiaDemandaAnual,
+    semMultaNoPico, multaAnualEst, sim: simIA, narrative, paramsIA
+  };
+}
+
+function buildIANarrative(v) {
+  const p = [];
+  p.push(`Eu indico, baseado neste histórico de uso, que a demanda contratada deveria ficar em <strong>${v.D} kW</strong>.`);
+  p.push(`O pico máximo que você teve foi <strong>${Math.round(v.maxP)} kW</strong> e o menor foi <strong>${Math.round(v.minP)} kW</strong>. Hoje você contrata <strong>${Math.round(v.contratadaAtual)} kW</strong> — ou seja, paga por <strong>${Math.round(v.excessoContratado)} kW</strong> que não utiliza no dia a dia.`);
+  p.push(`Com <strong>${v.D} kW</strong> contratados, você pode usar até <strong>${Math.round(v.limiteSemMulta)} kW</strong> (10% acima) sem cobrança de ultrapassagem. Seu pico de ${Math.round(v.maxP)} kW ${v.semMultaNoPico ? '<strong>fica dentro dessa faixa — sem multa</strong>' : 'pode gerar ultrapassagem pontual, mas ainda assim tende a ser mais barato que manter a demanda inflada'}.`);
+  if (v.excessoContratado > 0) {
+    p.push(`Reduzir de ${Math.round(v.contratadaAtual)} kW para ${v.D} kW economiza cerca de <strong>${fmtMoney(v.economiaAnual)}/ano</strong> (sendo ~${fmtMoney(v.economiaDemandaAnual)} só em custo de demanda TUSD).`);
+  }
+  if (v.sim?.overMonths > 0 && v.multaAnualEst > 0) {
+    p.push(`Mesmo pagando multa de ultrapassagem em alguns meses (~${fmtMoney(v.multaAnualEst)}/ano estimado), ainda fica <strong>mais barato</strong> do que manter ${Math.round(v.contratadaAtual)} kW contratados sem usar.`);
+  }
+  return p.join(' ');
+}
+
+function buildIANarrativePlain(v) {
+  return buildIANarrative(v).replace(/<\/?strong>/g, '');
+}
+
+function buildSeasonalFlat(months, D) {
+  const labels = months.map(m => m.mes.split('/')[0].toUpperCase());
+  return {
+    perMonth: months.map(m => ({ ...m, suggestedD: D })),
+    groups: [{ D, labels }]
+  };
+}
+
+function renderIAIndicadorUI(r) {
+  if (!r?.ia) return;
+  const ia = r.ia;
+  const kw = `${ia.D} kW`;
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+
+  set('ia-box-kw', kw);
+  set('ia-box-text', ia.narrative);
+  set('ia-box-max', fmtKw(ia.maxP));
+  set('ia-box-min', fmtKw(ia.minP));
+  set('ia-box-contr', fmtKw(r.contratadaAtual));
+  set('ia-box-limite', fmtKw(ia.limiteSemMulta));
+
+  set('ia-page-kw', kw);
+  set('ia-page-narrative', ia.narrative);
+  set('ia-page-max', fmtKw(ia.maxP));
+  set('ia-page-min', fmtKw(ia.minP));
+  set('ia-page-contr', fmtKw(r.contratadaAtual));
+  set('ia-page-excesso', fmtKw(ia.excessoContratado));
+  set('ia-page-limite', fmtKw(ia.limiteSemMulta));
+  set('ia-page-economia', fmtMoney(ia.economiaAnual));
+
+  const rationale = document.getElementById('ia-page-rationale');
+  if (rationale) {
+    rationale.innerHTML = `
+      <p>• Pico histórico: <strong>${Math.round(ia.maxP)} kW</strong> — a IA posiciona a contratação em ${ia.D} kW, ligeiramente acima do pico.</p>
+      <p>• Tolerância regulatória simulada: <strong>10%</strong> acima de ${ia.D} kW = até ${Math.round(ia.limiteSemMulta)} kW sem multa.</p>
+      <p>• Você contrata <strong>${Math.round(r.contratadaAtual)} kW</strong> mas nunca passou de <strong>${Math.round(ia.maxP)} kW</strong> — pagando ~${Math.round(ia.excessoContratado)} kW extras todo mês.</p>
+      <p>• Meses com ultrapassagem na proposta IA: <strong>${ia.sim.overMonths}</strong>.</p>`;
+  }
+
+  const btnIA = document.getElementById('btnExportPdfIA');
+  if (btnIA) btnIA.disabled = false;
+}
+
+function renderIndicadorIAPage() {
+  const empty = document.getElementById('ia-page-empty');
+  const content = document.getElementById('ia-page-content');
+  if (!state.demandSimResult?.ia) {
+    if (empty) empty.classList.remove('hidden');
+    if (content) content.classList.add('hidden');
+    return;
+  }
+  if (empty) empty.classList.add('hidden');
+  if (content) content.classList.remove('hidden');
+  renderIAIndicadorUI(state.demandSimResult);
+  renderChartIndicadorIA(state.demandSimResult);
+}
+
+function renderChartIndicadorIA(r) {
+  if (state.analiticoCharts.indicador) state.analiticoCharts.indicador.destroy();
+  const canvas = document.getElementById('chartIndicadorIA');
+  if (!canvas || !r?.ia) return;
+  const labels = r.months.map(m => m.competencia);
+  const D = r.recomendada;
+  state.analiticoCharts.indicador = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'medida', data: r.months.map(m => m.medida), borderColor: '#f44336', tension: 0.25, pointRadius: 3 },
+        { label: 'contratada', data: labels.map(() => r.contratadaAtual), borderColor: '#e5e2e1', borderWidth: 2, pointRadius: 0 },
+        { label: 'indicador IA', data: labels.map(() => D), borderColor: '#4ae183', borderWidth: 3, pointRadius: 0 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: '#bfc7d2' } } },
+      scales: {
+        x: { ticks: { color: '#89929b' }, grid: { color: 'rgba(63,72,80,0.2)' } },
+        y: { min: 0, ticks: { color: '#89929b' }, grid: { color: 'rgba(63,72,80,0.2)' }, title: { display: true, text: 'kW', color: '#89929b' } }
+      }
+    }
+  });
+}
+
+async function regenerateIANarrative() {
+  const r = state.demandSimResult;
+  if (!r?.ia || !state.geminiKey) { alert('Configure a API Gemini ou execute a simulação primeiro.'); return; }
+  const btn = document.getElementById('btnRegenIA');
+  if (btn) { btn.disabled = true; btn.textContent = 'Gerando...'; }
+  try {
+    const prompt = `Você é IFES AI, especialista em demanda contratada de energia elétrica (Grupo A).
+Com base nos dados abaixo, escreva um parecer em português claro (3-4 parágrafos) no estilo:
+"Eu indico, baseado neste histórico..." explicando por que reduzir a demanda contratada.
+Use os números exatos. Mencione pico, mínimo, contratada atual, indicador ${r.ia.D} kW, tolerância 10% sem multa, e economia.
+Dados: ${JSON.stringify({ pico: r.ia.maxP, minimo: r.ia.minP, contratada: r.contratadaAtual, indicadorIA: r.ia.D, limiteSemMulta: r.ia.limiteSemMulta, economiaAnual: r.ia.economiaAnual, excessoContratado: r.ia.excessoContratado })}`;
+    const raw = await callGemini(prompt, null, { temperature: 0.5, maxOutputTokens: 1024 });
+    r.ia.narrative = formatChatReply(raw);
+    renderIAIndicadorUI(r);
+  } catch (e) {
+    alert('Erro ao regenerar: ' + e.message);
+  }
+  if (btn) { btn.disabled = false; btn.innerHTML = '<span class="material-symbols-outlined text-sm">refresh</span> Regenerar texto com Gemini'; }
+}
+
+function runDemandSimulation() {
+  const months = getDemandMonths();
+  const params = getSimulationParams();
+  const mtCount = state.bills.filter(b => b.tipoTarifa === 'MT' || billHasDemandData(b)).length;
+
+  if (!months.length) {
+    alert('Importe faturas de média tensão (Grupo A) com dados de demanda (kW) antes de simular.');
+    return;
+  }
+  if (months.length < 12 && !params.acceptPrelim) {
+    alert(`Histórico insuficiente (${months.length} mês(es)). Ative "Aceitar análise preliminar" ou importe mais faturas.`);
+    return;
+  }
+
+  const medidas = months.map(m => m.medida);
+  const avgTarifa = months.reduce((s, m) => s + (m.tarifaKw || 0), 0) / (months.filter(m => m.tarifaKw > 0).length || 1);
+  params.avgTarifa = avgTarifa || 1;
+
+  const p95 = percentile(medidas, 95);
+  const p99 = percentile(medidas, 99);
+  const maxHist = Math.max(...medidas);
+  const minHist = Math.min(...medidas);
+  const contratadaAtual = Math.round(months.reduce((s, m) => s + m.contratada, 0) / months.length);
+
+  const ia = computeIARecommendation(months, params, contratadaAtual);
+
+  const atual = simulateDemandCost(months, contratadaAtual, params);
+  const conservadorD = Math.ceil(p99 * (1 + params.techMargin));
+  const p95D = Math.round(p95);
+  const opt = findOptimalDemand(months, params);
+  const agr = findAggressiveDemand(months, params);
+
+  const conservador = simulateDemandCost(months, conservadorD, params);
+  const estatistico = simulateDemandCost(months, p95D, params);
+  const iaScenario = { ...ia.sim, D: ia.D };
+
+  const economia = atual.annualized - ia.sim.annualized;
+  const economiaPct = atual.annualized > 0 ? (economia / atual.annualized) * 100 : 0;
+  const meta = getClientMetaFromBills();
+  const seasonal = buildSeasonalFlat(months, ia.D);
+
+  state.demandSimResult = {
+    generatedAt: new Date(),
+    params,
+    months,
+    mtCount,
+    meta,
+    seasonal,
+    ia,
+    p95, p99, maxHist, minHist, contratadaAtual,
+    atual, conservador: { ...conservador, D: conservadorD }, estatistico: { ...estatistico, D: p95D },
+    otimo: opt, agressivo: agr, iaScenario,
+    recomendada: ia.D,
+    economia, economiaPct,
+    periodo: `${months[0].competencia} → ${months[months.length - 1].competencia}`,
+    economiaTable: null
+  };
+  state.demandSimResult.economiaTable = buildEconomiaTable(state.demandSimResult);
+
+  renderAnaliticoResults(state.demandSimResult);
+  document.getElementById('anal-empty').classList.add('hidden');
+  document.getElementById('anal-results').classList.remove('hidden');
+  document.getElementById('btnExportPdf').disabled = false;
+  const btnIA = document.getElementById('btnExportPdfIA');
+  if (btnIA) btnIA.disabled = false;
+}
+
+function updateAnaliticoPage() {
+  const mtBills = state.bills.filter(b => b.tipoTarifa === 'MT' || billHasDemandData(b));
+  const el = document.getElementById('anal-fonte-dados');
+  if (el) el.textContent = `${mtBills.length} fatura(s) carregada(s)`;
+}
+
+function renderAnaliticoResults(r) {
+  document.getElementById('kpi-dem-contr').textContent = fmtKw(r.contratadaAtual);
+  document.getElementById('kpi-dem-rec').textContent = fmtKw(r.recomendada);
+  document.getElementById('kpi-dem-max').textContent = fmtKw(r.maxHist);
+  document.getElementById('kpi-over-months').textContent = String(r.atual.overMonths);
+  document.getElementById('kpi-custo-periodo').textContent = fmtMoney(r.atual.totalCost);
+  document.getElementById('kpi-custo-periodo-sub').textContent = `${r.months.length} meses`;
+  document.getElementById('kpi-custo-atual').textContent = fmtMoney(r.atual.annualized);
+  document.getElementById('kpi-custo-otim').textContent = fmtMoney(r.ia?.sim?.annualized ?? r.otimo.annualized);
+  document.getElementById('kpi-economia').textContent = `${fmtMoney(r.economia)} (${r.economiaPct.toFixed(1)}%)`;
+  document.getElementById('kpi-meses-usados').textContent = String(r.months.length);
+  document.getElementById('kpi-periodo').textContent = r.periodo;
+  document.getElementById('kpi-origem-sub').textContent = `${r.mtCount} faturas`;
+  document.getElementById('kpi-ocr').textContent = state.geminiKey ? '—' : '0%';
+
+  const setScenario = (prefix, data, badgeEl) => {
+    document.getElementById(`val-${prefix}`).textContent = fmtKw(data.D);
+    document.getElementById(`foot-${prefix}`).textContent = `Anualizado: ${fmtMoney(data.annualized)} · Risco: ${Math.round(data.riskScore)}`;
+    const badge = document.getElementById(badgeEl);
+    badge.textContent = `${data.overMonths} acima`;
+    badge.className = 'anal-scenario-badge' + (data.overMonths > 0 ? ' warn' : '');
+  };
+  setScenario('cons', r.conservador, 'badge-cons');
+  setScenario('p95', r.estatistico, 'badge-p95');
+  setScenario('opt', r.iaScenario || { ...r.ia.sim, D: r.recomendada }, 'badge-opt');
+  setScenario('agr', r.agressivo, 'badge-agr');
+
+  document.getElementById('chart-bar-subtitle').textContent =
+    `Linhas de referência: P95 (${r.p95.toFixed(1)} kW), P99 (${r.p99.toFixed(1)} kW) e indicador IA recomendado (${r.recomendada.toFixed(1)} kW).`;
+
+  renderIAIndicadorUI(r);
+  renderAnaliticoCharts(r);
+  renderRelatorioOtimizacao(r);
+  if (document.getElementById('page-indicador-ia')?.classList.contains('active')) renderIndicadorIAPage();
+}
+
+const MESES_CURTOS = { '01':'Jan','02':'Fev','03':'Mar','04':'Abr','05':'Mai','06':'Jun','07':'Jul','08':'Ago','09':'Set','10':'Out','11':'Nov','12':'Dez' };
+function compToShort(comp) {
+  const p = (comp || '').split('-');
+  return MESES_CURTOS[p[1]] || comp;
+}
+
+function buildLaudoText(r) {
+  const et = r.economiaTable || buildEconomiaTable(r);
+  const ia = r.ia;
+  return (
+    `A otimização com dados históricos de consumo e demanda da unidade consumidora (${r.periodo}), ` +
+    `considerando as opções disponíveis de contratação e as tarifas vigentes, apontou a necessidade de ajustes no contrato de energia. ` +
+    `O Indicador IFES AI recomenda reduzir a demanda contratada de ${r.contratadaAtual} kW para ${r.recomendada} kW ` +
+    `(pico máximo ${Math.round(ia?.maxP || r.maxHist)} kW, mínimo ${Math.round(ia?.minP || 0)} kW), ` +
+    `com economia estimada de R$ ${fmtPdfNum(et.economia)} em 12 meses. ` +
+    'Até 10% acima da demanda contratada não há cobrança de ultrapassagem. ' +
+    'Recomenda-se também ações de eficiência energética, microgeração e análise de fator de potência.'
+  );
+}
+
+function renderRelatorioOtimizacao(r) {
+  const et = r.economiaTable || buildEconomiaTable(r);
+  document.getElementById('laudo-text').textContent = buildLaudoText(r);
+
+  const tbody = document.getElementById('economia-tbody');
+  tbody.innerHTML = et.rows.map((row, i) => {
+    const isTotal = row[0].includes('TOTAL');
+    const isEco = row[0] === 'Economia';
+    const cls = isTotal ? 'total' : (isEco ? 'economia' : '');
+    return `<tr class="${cls}"><td>${row[0]}</td><td class="num">${row[1]}</td><td class="num">${row[2]}</td></tr>`;
+  }).join('');
+
+  document.getElementById('economia-footnotes').innerHTML = [
+    '¹ mantido o contrato atual de fornecimento de energia.',
+    '² se as instruções deste documento forem seguidas integralmente.',
+    '³ itens não considerados nos cálculos como: PIS/PASEP/COFINS, bandeiras tarifárias (veja o glossário técnico).'
+  ].map(n => `<p>${n}</p>`).join('');
+
+  document.getElementById('previsao-tbody').innerHTML = r.months.map(m => {
+    const sug = r.seasonal?.perMonth?.find(p => p.competencia === m.competencia);
+    return `<tr>
+      <td>${m.competencia}</td>
+      <td class="num">${m.medida.toFixed(1)}</td>
+      <td class="num">${r.contratadaAtual.toFixed(0)}</td>
+      <td class="num">${(sug?.suggestedD || r.recomendada).toFixed(0)}</td>
+    </tr>`;
+  }).join('');
+
+  renderChartDemandaRelatorio(r);
+}
+
+function renderChartDemandaRelatorio(r) {
+  if (state.analiticoCharts.relatorio) state.analiticoCharts.relatorio.destroy();
+  const labels = r.months.map(m => compToShort(m.competencia));
+  const projetada = r.months.map(m => m.medida);
+  const contratada = r.months.map(() => r.contratadaAtual);
+  const sugerida = r.months.map(m => {
+    const sug = r.seasonal?.perMonth?.find(p => p.competencia === m.competencia);
+    return sug?.suggestedD || r.recomendada;
+  });
+  const maxY = Math.ceil(Math.max(...projetada, ...contratada, ...sugerida, r.p95) * 1.1 / 10) * 10;
+
+  state.analiticoCharts.relatorio = new Chart(document.getElementById('chartDemandaRelatorio'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Demanda Projetada',
+          data: projetada,
+          borderColor: '#1a1a1a',
+          backgroundColor: 'rgba(26,26,26,0.08)',
+          tension: 0.35,
+          pointRadius: 4,
+          pointBackgroundColor: '#1a1a1a',
+          borderWidth: 2
+        },
+        {
+          label: 'Demanda Sugerida Ótima',
+          data: sugerida,
+          borderColor: '#2563eb',
+          backgroundColor: 'rgba(37,99,235,0.08)',
+          stepped: 'before',
+          pointRadius: 4,
+          pointBackgroundColor: '#2563eb',
+          borderWidth: 2
+        },
+        {
+          label: 'Demanda Contratada',
+          data: contratada,
+          borderColor: '#dc2626',
+          backgroundColor: 'transparent',
+          pointRadius: 4,
+          pointBackgroundColor: '#dc2626',
+          borderWidth: 2,
+          fill: false
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { color: '#333', font: { size: 11 }, usePointStyle: true, padding: 16 }
+        },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Mês', color: '#555' },
+          ticks: { color: '#555' },
+          grid: { color: 'rgba(0,0,0,0.06)' }
+        },
+        y: {
+          min: 0,
+          max: maxY,
+          title: { display: true, text: 'Demanda [kW]', color: '#555' },
+          ticks: { color: '#555', stepSize: Math.max(10, Math.round(maxY / 10)) },
+          grid: { color: 'rgba(0,0,0,0.08)' }
+        }
+      }
+    }
+  });
+}
+
+function renderAnaliticoCharts(r) {
+  const labels = r.months.map(m => m.competencia);
+  const contratada = r.contratadaAtual;
+  const recomendada = r.recomendada;
+
+  if (state.analiticoCharts.bar) state.analiticoCharts.bar.destroy();
+  if (state.analiticoCharts.line) state.analiticoCharts.line.destroy();
+
+  const chartDefaults = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { color: '#bfc7d2', font: { size: 11 } } },
+      tooltip: { mode: 'index', intersect: false }
+    },
+    scales: {
+      x: { ticks: { color: '#89929b', maxRotation: 45, font: { size: 10 } }, grid: { color: 'rgba(63,72,80,0.2)' } },
+      y: { min: 0, ticks: { color: '#89929b' }, grid: { color: 'rgba(63,72,80,0.2)' }, title: { display: true, text: 'kW', color: '#89929b' } }
+    }
+  };
+
+  state.analiticoCharts.bar = new Chart(document.getElementById('chartDemandaBar'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Contratada', data: labels.map(() => contratada), backgroundColor: 'rgba(137,146,155,0.7)', borderRadius: 3 },
+        { label: 'Máxima medida', data: r.months.map(m => m.medida), backgroundColor: 'rgba(255,152,0,0.75)', borderRadius: 3 },
+        { label: 'Ótima (IA)', type: 'line', data: labels.map(() => recomendada), borderColor: '#4ae183', borderWidth: 2, pointRadius: 0, fill: false },
+        { label: 'P95', type: 'line', data: labels.map(() => r.p95), borderColor: 'rgba(255,152,0,0.6)', borderDash: [6, 4], borderWidth: 1.5, pointRadius: 0, fill: false },
+        { label: 'P99', type: 'line', data: labels.map(() => r.p99), borderColor: 'rgba(255,152,0,0.35)', borderDash: [6, 4], borderWidth: 1.5, pointRadius: 0, fill: false }
+      ]
+    },
+    options: chartDefaults
+  });
+
+  state.analiticoCharts.line = new Chart(document.getElementById('chartDemandaLine'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'medida', data: r.months.map(m => m.medida), borderColor: '#f44336', backgroundColor: 'rgba(244,67,54,0.1)', tension: 0.25, pointRadius: 2 },
+        { label: 'contratada', data: labels.map(() => contratada), borderColor: '#e5e2e1', borderWidth: 2, pointRadius: 0, fill: false },
+        { label: 'indicador IA', data: labels.map(() => recomendada), borderColor: '#4ae183', borderWidth: 2, pointRadius: 0, fill: false }
+      ]
+    },
+    options: chartDefaults
+  });
+}
+
+async function loadIfesLogoDataUrl() {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width || 200;
+      canvas.height = img.height || 80;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(null);
+    img.src = IFES_LOGO_URL;
+  });
+}
+
+function fmtPdfNum(v) {
+  return parseFloat(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function getModalidadeLabel() {
+  const v = document.getElementById('anal-modalidade')?.value || 'verde';
+  return { verde: 'Horária Verde', azul: 'Horária Azul', convencional: 'Convencional' }[v] || v;
+}
+
+function getClientMetaFromBills() {
+  const bills = state.bills.filter(b => b.tipoTarifa === 'MT' || billHasDemandData(b));
+  const last = bills[bills.length - 1] || {};
+  const n = bills.length || 1;
+  return {
+    distribuidora: last.distribuidora || '—',
+    subgrupo: last.subgrupo || '—',
+    classe: last.tipoTarifa === 'MT' ? 'Industrial / Comercial MT' : '—',
+    modalidade: getModalidadeLabel(),
+    cip: bills.reduce((s, b) => s + (parseFloat(b.impostos?.CIP) || 0), 0) / n,
+    impostosPct: 0,
+    outros: bills.reduce((s, b) => s + (parseFloat(b.impostos?.jurosMora) || 0) + (parseFloat(b.impostos?.multaMora) || 0), 0) / n
+  };
+}
+
+function buildSeasonalRecommendations(months, params) {
+  const perMonth = months.map(m => {
+    const tarifa = m.tarifaKw || params.avgTarifa;
+    let bestD = Math.ceil(m.medida * (1 + params.techMargin));
+    let bestCost = Infinity;
+    for (let D = Math.max(1, Math.floor(m.medida * 0.7)); D <= Math.ceil(m.medida * 1.2); D += params.sweepStep) {
+      const limit = D * (1 + params.tolerance);
+      const cost = D * tarifa + (m.medida > limit ? (m.medida - limit) * tarifa * params.overMult : 0);
+      if (cost < bestCost) { bestCost = cost; bestD = D; }
+    }
+    return { ...m, suggestedD: bestD };
+  });
+  const groups = [];
+  let cur = null;
+  perMonth.forEach(m => {
+    const label = m.mes.split('/')[0].toUpperCase();
+    if (!cur || cur.D !== m.suggestedD) {
+      cur = { D: m.suggestedD, labels: [label] };
+      groups.push(cur);
+    } else {
+      cur.labels.push(label);
+    }
+  });
+  return { perMonth, groups };
+}
+
+function buildEconomiaTable(r) {
+  const n = r.months.length || 1;
+  const scale12 = 12 / n;
+  const dmcrAtual = r.months.reduce((s, m) => s + m.dmcr, 0) * scale12;
+  const cip = (r.meta.cip || 0) * scale12;
+  const outros = (r.meta.outros || 0) * scale12;
+  const atualDemanda = r.atual.demandCostSum * scale12;
+  const atualUltrap = dmcrAtual + r.atual.overCostSum * scale12;
+  const propostaDemanda = (r.ia?.sim?.demandCostSum ?? r.otimo.demandCostSum) * scale12;
+  const propostaUltrap = (r.ia?.sim?.overCostSum ?? r.otimo.overCostSum) * scale12;
+  const totalAtual = atualDemanda + atualUltrap + cip + outros;
+  const totalProposta = propostaDemanda + propostaUltrap + cip + outros;
+  return {
+    rows: [
+      ['Custo de Demanda (TUSD)', fmtPdfNum(atualDemanda), fmtPdfNum(propostaDemanda)],
+      ['Ultrapassagem', fmtPdfNum(atualUltrap), fmtPdfNum(propostaUltrap)],
+      ['PIS/PASEP+COFINS+ICMS(%)', fmtPdfNum(0), fmtPdfNum(0)],
+      ['CIP ou COSIP (R$)', fmtPdfNum(cip), fmtPdfNum(cip)],
+      ['Outros (R$)', fmtPdfNum(outros), fmtPdfNum(outros)],
+      ['TOTAL (12 meses)', fmtPdfNum(totalAtual), fmtPdfNum(totalProposta)],
+      ['Economia', '', fmtPdfNum(totalAtual - totalProposta)]
+    ],
+    economia: totalAtual - totalProposta
+  };
+}
+
+const PDF_GLOSSARY = [
+  ['Ano A-1', 'Primeiro dentre os três anos históricos utilizados para a análise de consumo e demanda.'],
+  ['Bandeiras Tarifárias', 'Sinalização tarifária que indica condições de geração e pode alterar o valor da energia consumida.'],
+  ['CUSD', 'Contrato de Uso do Sistema de Distribuição firmado entre distribuidora e consumidor do Grupo A.'],
+  ['Demanda', 'Média das potências elétricas ativas (kW) requeridas pela carga durante intervalo de 15 minutos.'],
+  ['Demanda Contratada', 'Potência ativa (kW) contratada junto à distribuidora, paga mesmo quando não utilizada.'],
+  ['Demanda Faturável', 'Maior valor entre demanda máxima medida e demanda contratada no período de faturamento.'],
+  ['Fatura', 'Documento emitido pela distribuidora com o valor total a pagar — Nota Fiscal/Conta de Energia Elétrica.'],
+  ['Horário Fora de Ponta', 'Período fora do horário de ponta, incluindo sábados, domingos e feriados.'],
+  ['Horário de Ponta', 'Três horas consecutivas diárias definidas pela distribuidora com tarifas TE/TUSD mais elevadas.'],
+  ['Horo-Sazonal Azul', 'Modalidade com tarifas distintas de demanda e energia nos postos ponta e fora ponta.'],
+  ['Horo-Sazonal Verde', 'Uma tarifa de demanda e tarifas distintas de energia nos postos ponta e fora ponta.'],
+  ['Otimização', 'Processo matemático que identifica a melhor alternativa diante de restrições estabelecidas.'],
+  ['PIS/PASEP/COFINS e ICMS', 'Tributos aplicados sobre o faturamento da distribuidora e repassados ao consumidor.'],
+  ['TE — Tarifa de Energia', 'Valor determinado pela ANEEL (R$/MWh) para faturamento do consumo de energia.'],
+  ['TUSD — Tarifa de Uso do Sistema', 'Valor ANEEL em R$/MWh e R$/kW para faturamento pelo uso do sistema de distribuição.'],
+  ['Ultrapassagem de Demanda', 'Penalidade pelo uso acima de 5% da demanda contratada, cobrada em dobro sobre o excesso.']
+];
+
+function pdfEnsureSpace(doc, y, needed, margin) {
+  const pageH = doc.internal.pageSize.getHeight();
+  if (y + needed > pageH - 15) { doc.addPage(); return margin; }
+  return y;
+}
+
+function pdfSectionTitle(doc, title, y, margin) {
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(30, 30, 30);
+  doc.text(title, margin, y);
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.2);
+  doc.line(margin, y + 1.5, doc.internal.pageSize.getWidth() - margin, y + 1.5);
+  return y + 7;
+}
+
+function pdfParagraph(doc, text, y, margin, pageW, size = 9) {
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(size);
+  doc.setTextColor(50, 50, 50);
+  const lines = doc.splitTextToSize(text, pageW - margin * 2);
+  doc.text(lines, margin, y);
+  return y + lines.length * (size * 0.45) + 4;
+}
+
+function pdfRenderGlossary(doc, startY, margin, pageW) {
+  let y = pdfSectionTitle(doc, 'Glossário Técnico', startY, margin);
+  const colW = (pageW - margin * 2 - 6) / 2;
+  const mid = margin + colW + 6;
+  const half = Math.ceil(PDF_GLOSSARY.length / 2);
+  let yL = y, yR = y;
+  PDF_GLOSSARY.forEach(([term, def], i) => {
+    const x = i < half ? margin : mid;
+    let yy = i < half ? yL : yR;
+    yy = pdfEnsureSpace(doc, yy, 18, margin);
+    if (i === half) yL = yy;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(30, 30, 30);
+    doc.text(term + ':', x, yy);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(60, 60, 60);
+    const defLines = doc.splitTextToSize(def, colW);
+    doc.text(defLines, x, yy + 4);
+    const blockH = 4 + defLines.length * 3.5 + 4;
+    if (i < half) yL = yy + blockH; else yR = yy + blockH;
+  });
+  return Math.max(yL, yR);
+}
+
+function getChartImageDataUrl(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return null;
+  try { return canvas.toDataURL('image/png', 1.0); } catch (e) { return null; }
+}
+
+async function exportDemandPDF() {
+  const r = state.demandSimResult;
+  if (!r) { alert('Execute a simulação antes de exportar o PDF.'); return; }
+
+  const btn = document.getElementById('btnExportPdf');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="material-symbols-outlined text-sm spinner inline-block">progress_activity</span> Gerando PDF...';
+
+  try {
+    await new Promise(res => setTimeout(res, 400));
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const margin = 14;
+    let y = margin;
+    const meta = r.meta || {};
+    const et = r.economiaTable || buildEconomiaTable(r);
+
+    const logo = await loadIfesLogoDataUrl();
+    if (logo) doc.addImage(logo, 'PNG', margin, y, 22, 22);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(20, 20, 20);
+    doc.text('IFES', margin + 26, y + 8);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(80, 80, 80);
+    doc.text('Modelo de Avaliação dos Contratos de Demanda de Energia', margin + 26, y + 14);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(6, 120, 80);
+    doc.text('Relatório de ajuste de demanda', pageW - margin, y + 8, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text(r.generatedAt.toLocaleDateString('pt-BR'), pageW - margin, y + 14, { align: 'right' });
+    y += 28;
+
+    y = pdfSectionTitle(doc, 'Dados do cliente:', y, margin);
+    const clientRows = [
+      ['CNPJ / Razão Social / UC', '— / — / —'],
+      ['Distribuidora / Concessionária / Permissionária (Cooperativa)', meta.distribuidora],
+      ['Cliente', '—'],
+      ['Classe', meta.classe],
+      ['Subgrupo', meta.subgrupo],
+      ['Modalidade Tarifária', meta.modalidade],
+      ['PIS/PASEP + COFINS + ICMS (%)', fmtPdfNum(meta.impostosPct || 0)],
+      ['CIP ou COSIP (R$)', fmtPdfNum(meta.cip || 0)],
+      ['Outros (R$)', fmtPdfNum(meta.outros || 0)]
+    ];
+    doc.autoTable({
+      startY: y,
+      body: clientRows,
+      theme: 'plain',
+      margin: { left: margin, right: margin },
+      styles: { fontSize: 9, cellPadding: 1.8, textColor: [50, 50, 50] },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 78 }, 1: { cellWidth: 'auto' } }
+    });
+    y = doc.lastAutoTable.finalY + 6;
+
+    y = pdfSectionTitle(doc, 'Informações:', y, margin);
+    y = pdfParagraph(doc,
+      'Este relatório foi elaborado com base na Resolução Normativa ANEEL nº 1.000/2021 e demais normas aplicáveis. ' +
+      'As regras de contratação, prazos e procedimentos devem ser confirmados junto à distribuidora de energia. ' +
+      'As tarifas de energia (TE) e de demanda (TUSD) utilizadas foram extraídas das faturas importadas pelo usuário. ' +
+      'Dúvidas: IFES Energy IA — Mestrado em Engenharia de Controle e Automação / IFES.',
+      y, margin, pageW, 8.5);
+    y += 2;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(6, 120, 80);
+    doc.text('Relatório de Otimização', margin, y);
+    y += 8;
+
+    if (r.ia) {
+      y = pdfSectionTitle(doc, 'Indicador IFES AI — Recomendação de Demanda', y, margin);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(6, 120, 80);
+      doc.text(`Demanda contratada sugerida: ${r.ia.D} kW`, margin, y);
+      y += 7;
+      y = pdfParagraph(doc, buildIANarrativePlain({ ...r.ia, contratadaAtual: r.contratadaAtual }), y, margin, pageW, 9);
+      y += 2;
+    }
+
+    y = pdfSectionTitle(doc, 'Laudo Técnico da Otimização', y, margin);
+    y = pdfParagraph(doc, buildLaudoText(r), y, margin, pageW, 9);
+
+    y = pdfSectionTitle(doc, 'Economia Esperada', y, margin);
+    doc.autoTable({
+      startY: y,
+      head: [['Denominação', 'Atual¹', 'Proposta²']],
+      body: et.rows,
+      margin: { left: margin, right: margin },
+      styles: { fontSize: 9, cellPadding: 2.5, textColor: [40, 40, 40] },
+      headStyles: { fillColor: [240, 240, 240], textColor: [30, 30, 30], fontStyle: 'bold' },
+      columnStyles: { 0: { cellWidth: 72 }, 1: { halign: 'right' }, 2: { halign: 'right' } },
+      didParseCell: (data) => {
+        if (data.section === 'body' && data.row.index === et.rows.length - 1 && data.column.index === 2) {
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.textColor = [6, 120, 80];
+        }
+      },
+      theme: 'grid'
+    });
+    y = doc.lastAutoTable.finalY + 3;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 100, 100);
+    const notes = [
+      '¹ mantido o contrato atual de fornecimento de energia.',
+      '² se as instruções deste documento forem seguidas integralmente.',
+      '³ itens não considerados nos cálculos como: PIS/PASEP/COFINS, bandeiras tarifárias (veja o glossário técnico).'
+    ];
+    notes.forEach(n => { doc.text(n, margin, y); y += 3.5; });
+    y += 4;
+
+    y = pdfEnsureSpace(doc, y, 40, margin);
+    y = pdfSectionTitle(doc, 'Previsão de demanda:', y, margin);
+    const prevRows = r.months.map(m => {
+      const sug = r.seasonal?.perMonth?.find(p => p.competencia === m.competencia);
+      return [
+        m.competencia,
+        m.medida.toFixed(1),
+        r.contratadaAtual.toFixed(0),
+        (sug?.suggestedD || r.recomendada).toFixed(0)
+      ];
+    });
+    doc.autoTable({
+      startY: y,
+      head: [['Competência', 'Demanda medida (kW)', 'Contratada (kW)', 'Sugerida (kW)']],
+      body: prevRows,
+      margin: { left: margin, right: margin },
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [240, 240, 240], textColor: [30, 30, 30], fontStyle: 'bold' },
+      theme: 'grid'
+    });
+
+    // ── Página 2: Gráfico de Demanda (relatório MACDE)
+    doc.addPage();
+    y = margin;
+    y = pdfSectionTitle(doc, 'GRÁFICO DE DEMANDA', y, margin);
+    const chartRel = getChartImageDataUrl('chartDemandaRelatorio');
+    if (chartRel) {
+      doc.addImage(chartRel, 'PNG', margin, y, pageW - margin * 2, 85);
+      y += 90;
+    } else {
+      y = pdfParagraph(doc, 'Gráfico de demanda não disponível.', y, margin, pageW, 9);
+    }
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    doc.text('Demanda Projetada (preto) · Demanda Sugerida Ótima (azul) · Demanda Contratada (vermelho)', margin, y);
+    y += 10;
+
+    // ── Página 3: Gráficos analíticos
+    doc.addPage();
+    y = margin;
+    y = pdfSectionTitle(doc, 'Análises — Demanda contratada x máxima histórica', y, margin);
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`P95: ${r.p95.toFixed(1)} kW · P99: ${r.p99.toFixed(1)} kW · Ótima: ${r.recomendada.toFixed(1)} kW`, margin, y);
+    y += 6;
+    const chartBar = getChartImageDataUrl('chartDemandaBar');
+    if (chartBar) {
+      doc.addImage(chartBar, 'PNG', margin, y, pageW - margin * 2, 70);
+      y += 75;
+    }
+    y = pdfEnsureSpace(doc, y, 80, margin);
+    y = pdfSectionTitle(doc, 'Análises — Demanda medida x contratada x recomendada', y, margin);
+    const chartLine = getChartImageDataUrl('chartDemandaLine');
+    if (chartLine) {
+      doc.addImage(chartLine, 'PNG', margin, y, pageW - margin * 2, 70);
+      y += 75;
+    }
+    y = pdfEnsureSpace(doc, y, 80, margin);
+    y = pdfSectionTitle(doc, 'Indicador IA — medida x contratada x sugerida', y, margin);
+    const chartIA = getChartImageDataUrl('chartIndicadorIA');
+    if (chartIA) {
+      doc.addImage(chartIA, 'PNG', margin, y, pageW - margin * 2, 70);
+      y += 75;
+    }
+
+    // ── Página 4: Ajuste + Contato
+    doc.addPage();
+    y = margin;
+    y = pdfSectionTitle(doc, 'Ajustando o Contrato', y, margin);
+    const recLines = (r.seasonal?.groups || []).map((g, i) =>
+      `${i + 1}. Alterar a demanda contratada para ${g.D} kW nos meses: ${g.labels.join(', ')}.`
+    );
+    const ajusteText =
+      'Manter a demanda contratada acima ou abaixo das necessidades reais implica perdas financeiras. ' +
+      'Conforme Resolução Normativa ANEEL nº 1.000/2021, o consumidor pode solicitar alteração de demanda contratada. ' +
+      (recLines.length ? recLines.join(' ') : `Recomenda-se contratar ${r.recomendada} kW (demanda ótima simulada).`) +
+      ' Solicitações de redução devem ser feitas com antecedência mínima de 90 dias (subgrupo AS ou A4) ou 180 dias (demais). ' +
+      'Somente uma redução é permitida a cada 12 meses, salvo exceções regulatórias.';
+    y = pdfParagraph(doc, ajusteText, y, margin, pageW, 9);
+
+    y = pdfSectionTitle(doc, 'Contato da Concessionária de Energia', y, margin);
+    y = pdfParagraph(doc,
+      `Nome: ${meta.distribuidora}\n` +
+      'Telefone: consultar site ou fatura da distribuidora\n' +
+      'Horário de atendimento: conforme canal oficial da concessionária\n' +
+      'E-mail: conforme canal oficial da distribuidora',
+      y, margin, pageW, 9);
+
+    // ── Página 5: Glossário
+    doc.addPage();
+    pdfRenderGlossary(doc, margin, margin, pageW);
+
+    doc.save(`Relatorio_ajuste_demanda_IFES_${r.periodo.replace(/\s→\s/g, '_')}.pdf`);
+    showToast('PDF exportado — formato referência MACDE/IFES!');
+    setTimeout(hideToast, 2500);
+  } catch (err) {
+    alert('Erro ao gerar PDF: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="material-symbols-outlined text-sm">picture_as_pdf</span> Extrair relatório em PDF';
+  }
+}
+
+// ═══════════════ EXPORT
+function exportCSV() {
+  if (!state.bills.length) { alert('Nenhuma fatura para exportar.'); return; }
+  const headers=['Mês','Tipo','kWh','Valor R$','Multa R$','Motivo Multa','kWh Ano Passado','Bandeira','Vencimento','Distribuidora','Subgrupo','Energia Ativa Ponta kWh','Energia Ativa FPonta kWh','Demanda Ponta kW','Demanda FPonta kW','Reativa Ponta kVAh','Reativa FPonta kVAh','GD Injetada FPonta kWh','CIP R$','Juros Mora R$','Multa Mora R$','Retenção PIS R$'];
+  const rows=state.bills.map(b=>[b.mes,b.tipoTarifa||'BT',b.kwh,b.valor,b.multa,b.motivoMulta||'',b.kwhAnoPassado||'',b.bandeira,b.vencimento||'',b.distribuidora||'',b.subgrupo||'',b.energiaAtiva?.ponta_kWh||'',b.energiaAtiva?.foraPonta_kWh||'',b.demanda?.medidaPonta_kW||'',b.demanda?.medidaFPonta_kW||'',b.energiaReativa?.ponta_kVAh||'',b.energiaReativa?.foraPonta_kVAh||'',b.geracaoDistribuida?.injetadaFPonta_kWh||'',b.impostos?.CIP||'',b.impostos?.jurosMora||'',b.impostos?.multaMora||'',b.impostos?.retencaoPIS||'']);
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${v}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='ifes-energy-faturas.csv';
+  a.click();
+}
+
+// ═══════════════ TOAST
+function showToast(msg, isError=false) {
+  const t=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent=msg;
+  t.style.display='block';
+  if (isError) t.querySelector('div').style.borderColor='rgba(255,180,171,0.3)';
+}
+function hideToast() { document.getElementById('toast').style.display='none'; }
+</script>
+</body>
+</html>
