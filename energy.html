@@ -177,12 +177,12 @@ tailwind.config = {
     </a>
     <a onclick="showPage('media-tensao')" class="nav-item flex items-center gap-4 px-4 py-3 text-neutral-500 font-medium hover:bg-neutral-900 hover:text-neutral-100 transition-all duration-200 cursor-pointer rounded-xl" data-page="media-tensao">
       <span class="material-symbols-outlined">electric_bolt</span>
-      <span class="font-headline tracking-tight">Média Tensão</span>
+      <span class="font-headline tracking-tight">Detalhes da Conta</span>
       <span class="ml-auto text-[9px] bg-tertiary/20 text-tertiary font-black px-2 py-0.5 rounded-full">MT</span>
     </a>
     <a onclick="showPage('analitico')" class="nav-item flex items-center gap-4 px-4 py-3 text-neutral-500 font-medium hover:bg-neutral-900 hover:text-neutral-100 transition-all duration-200 cursor-pointer rounded-xl" data-page="analitico">
       <span class="material-symbols-outlined">analytics</span>
-      <span class="font-headline tracking-tight">Analítico</span>
+      <span class="font-headline tracking-tight">Demanda Otimizada</span>
       <span class="ml-auto text-[9px] bg-secondary/20 text-secondary font-black px-2 py-0.5 rounded-full">MT</span>
     </a>
     <a onclick="showPage('indicador-ia')" class="nav-item flex items-center gap-4 px-4 py-3 text-neutral-500 font-medium hover:bg-neutral-900 hover:text-neutral-100 transition-all duration-200 cursor-pointer rounded-xl" data-page="indicador-ia">
@@ -1408,6 +1408,8 @@ Analise o PDF e retorne SOMENTE este JSON:
   ],
   "impostos": {"retencaoPIS":0,"retencaoCOFINS":0,"retencaoCSLL":0,"retencaoIRRF":0,"ICMS":0,"PIS_fatura":0,"COFINS_fatura":0,"CIP":0,"jurosMora":0,"multaMora":0,"outros":0},
   "demanda": {"contratadaPonta_kW":0,"contratadaFPonta_kW":0,"medidaPonta_kW":0,"medidaFPonta_kW":0,"valorPonta":0,"valorFPonta":0},
+  "grandezasContratadas": {"demandaKW":0},
+  "historicoConsumo": [{"mes":"mmm/AAAA","demandaForaPonta_kW":0,"demandaPonta_kW":0}],
   "energiaAtiva": {"ponta_kWh":0,"foraPonta_kWh":0,"valorPonta":0,"valorForaPonta":0},
   "energiaReativa": {"ponta_kVAh":0,"foraPonta_kVAh":0,"valorPonta":0,"valorForaPonta":0},
   "geracaoDistribuida": {"injetadaPonta_kWh":0,"injetadaFPonta_kWh":0,"saldoPonta_kWh":0,"saldoFPonta_kWh":0,"saldoTotal_kWh":0,"participacaoSaldo_pct":0,"creditoPonta":0,"creditoFPonta":0},
@@ -1420,6 +1422,14 @@ Regras:
 - descricao: traduza nomes técnicos para linguagem clara
 - Para BT: demanda/energiaReativa/DMCR/ERE podem ser zero
 - Use números, não strings
+
+DEMANDA (Grupo A — regras obrigatórias):
+- grandezasContratadas.demandaKW: valor em kW da seção "Grandezas Contratadas" / "Demanda contratual-KW" (ex.: 203). É o contrato único da unidade — NUNCA use demanda medida ou faturada aqui.
+- demanda.contratada*: mesmo valor de grandezasContratadas.demandaKW. Se aparecer duas linhas iguais (203 e 203), NÃO some; use 203 uma vez.
+- demanda.medida*: extrair do quadro "HISTÓRICO DE CONSUMO" do mês da fatura, coluna Demanda > Fora Ponta (kW). NUNCA confundir com demanda contratada. NUNCA some Ponta + Fora Ponta.
+- historicoConsumo: quando existir o quadro "HISTÓRICO DE CONSUMO", liste cada mês com demandaForaPonta_kW (coluna Demanda > Fora Ponta) e demandaPonta_kW (0 se vazio). Use o formato de mês da tabela EDP: "10/25", "11/24" (MM/AA).
+- NÃO use a coluna "Dem. Reat. Excedente" nem "En. Reat. Excedente" como demanda medida — são energia reativa, não demanda em kW.
+- CRÍTICO: demanda contratada (203) ≠ demanda medida no histórico (ex.: 139, 190). São campos diferentes.
 
 Classificação do campo "tipo" (OBRIGATÓRIO — siga exatamente):
 | tipo | O que é | Exemplos EDP |
@@ -1483,6 +1493,8 @@ async function processPDF(file, fromChat = false) {
     if (!data.geracaoDistribuida) data.geracaoDistribuida = {};
     if (!data.DMCR) data.DMCR = {};
     if (!data.ERE) data.ERE = {};
+    if (!data.grandezasContratadas) data.grandezasContratadas = {};
+    if (!data.historicoConsumo) data.historicoConsumo = [];
     normalizeBillItems(data);
 
     // deduplicate by mes
@@ -1501,7 +1513,7 @@ async function processPDF(file, fromChat = false) {
         ⚡ Consumo: <strong>${data.kwh} kWh</strong><br>
         💰 Valor: <strong>R$ ${fmtR(data.valor)}</strong>${data.multa > 0 ? `<br>⚠️ Multa/Juros: <strong style="color:#ffb4ab">R$ ${fmtR(data.multa)}</strong>` : ''}<br>
         🚦 Bandeira: <strong>${data.bandeira}</strong>
-        ${isMT ? `<br>🔌 Demanda Ponta: <strong>${data.demanda.medidaPonta_kW || 0} kW</strong> / Fora Ponta: <strong>${data.demanda.medidaFPonta_kW || 0} kW</strong>` : ''}`);
+        ${isMT ? `<br>🔌 Demanda medida (pico): <strong>${getDemandaMedidaTotal(data)} kW</strong> · Contratada: <strong>${getDemandaContratadaTotal(data)} kW</strong>` : ''}`);
     }
   } catch(err) {
     hideToast();
@@ -1629,13 +1641,196 @@ function normalizeBillItems(data) {
   });
   syncImpostosFromItens(data);
   syncGeracaoFromItens(data);
+  normalizeDemanda(data);
+}
+
+function coerceKw(v) {
+  if (v == null || v === '') return 0;
+  const n = parseFloat(String(v).replace(',', '.'));
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+function pickDemandContracted(conP, conFP) {
+  if (conP > 0 && conFP > 0) {
+    if (Math.abs(conP - conFP) < 0.01) return conP;
+    return Math.max(conP, conFP);
+  }
+  return conP || conFP || 0;
+}
+
+function pickDemandMeasured(medP, medFP) {
+  if (medFP > 0) return medFP;
+  return medP || 0;
+}
+
+function isContratualItemText(t) {
+  return /demanda\s*contratual|demanda\s*contrat|grandezas?\s*contrat|dem\s*contratual|\bcontratual\b.*\bkw\b|\bkw\b.*\bcontratual\b/.test(t);
+}
+
+function isMedidaItemText(t) {
+  if (isContratualItemText(t)) return false;
+  if (/reat\.?\s*exc|dem\.?\s*reat|energia\s*reat|kvar|reativa\s*exc/.test(t)) return false;
+  return /demanda\s*(max|medid|fatur|registr)|hist[oó]rico/.test(t)
+    || (/demanda/.test(t) && /(fora|f\.?\s*ponta|fponta)/.test(t) && !/contrat|reativ|reat/.test(t));
+}
+
+function extractContratadaKwFromBill(data) {
+  let best = 0;
+  const gc = data.grandezasContratadas || {};
+  best = Math.max(best,
+    coerceKw(gc.demandaKW), coerceKw(gc.demandaKw),
+    coerceKw(gc.demandaContratada_kW), coerceKw(gc.demandaContratual_kW)
+  );
+  const d = data.demanda || {};
+  best = Math.max(best, pickDemandContracted(coerceKw(d.contratadaPonta_kW), coerceKw(d.contratadaFPonta_kW)));
+
+  (data.itens || []).forEach(item => {
+    const t = itemText(item);
+    if (!isContratualItemText(t)) return;
+    const kw = item.unidade === 'kW' ? coerceKw(item.consumo) : coerceKw(item.consumo);
+    if (kw > 0) best = Math.max(best, kw);
+  });
+
+  const medida = pickDemandMeasured(coerceKw(d.medidaPonta_kW), coerceKw(d.medidaFPonta_kW));
+  const inferida = inferContratadaFromDemandaCobrada(data, medida);
+  if (inferida > 0) best = Math.max(best, inferida);
+
+  return best;
+}
+
+function inferContratadaFromDemandaCobrada(data, medida) {
+  let billedKw = 0;
+  (data.itens || []).forEach(item => {
+    if (item.tipo !== 'demanda') return;
+    const t = itemText(item);
+    if (isContratualItemText(t) || /reativ|reat\.?\s*exc|kvar/.test(t)) return;
+    const kw = item.unidade === 'kW' ? coerceKw(item.consumo) : 0;
+    if (kw > 0) billedKw = Math.max(billedKw, kw);
+  });
+  if (billedKw > medida) return billedKw;
+  return 0;
+}
+
+function pickContratadaConsenso(vals) {
+  if (!vals.length) return 0;
+  const rounded = vals.map(v => Math.round(v)).filter(v => v > 0);
+  if (!rounded.length) return 0;
+  const freq = {};
+  rounded.forEach(k => { freq[k] = (freq[k] || 0) + 1; });
+  const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1] || parseFloat(b[0]) - parseFloat(a[0]));
+  const modeVal = parseInt(sorted[0][0], 10);
+  const maxVal = Math.max(...rounded);
+  // Medida erroneamente usada como contratada fica menor; contrato real é o maior valor estável
+  if (maxVal > modeVal) return maxVal;
+  return modeVal;
+}
+
+function syncDemandaFromItens(data) {
+  const d = data.demanda || (data.demanda = {});
+  let conContratual = 0;
+  let medFP = 0;
+  let medP = 0;
+
+  (data.itens || []).forEach(item => {
+    const t = itemText(item);
+    const kw = item.unidade === 'kW' ? coerceKw(item.consumo) : (item.tipo === 'demanda' ? coerceKw(item.consumo) : 0);
+    if (!kw || /reativ|reat\.?\s*exc|kvar/.test(t)) return;
+
+    if (isContratualItemText(t)) {
+      conContratual = Math.max(conContratual, kw);
+      return;
+    }
+    if (!isMedidaItemText(t)) return;
+
+    if (/(fora|f\.?\s*ponta|fponta)/.test(t)) {
+      medFP = Math.max(medFP, kw);
+    } else if (/demanda.*ponta/.test(t)) {
+      medP = Math.max(medP, kw);
+    }
+  });
+
+  if (conContratual > 0) {
+    d.contratadaFPonta_kW = conContratual;
+    d.contratadaPonta_kW = 0;
+  }
+  if (medFP > 0) d.medidaFPonta_kW = medFP;
+  if (medP > 0 && !medFP) d.medidaPonta_kW = medP;
+}
+
+function applyHistoricoConsumoToDemanda(data) {
+  const hist = data.historicoConsumo;
+  if (!Array.isArray(hist) || !hist.length) return;
+  const d = data.demanda || (data.demanda = {});
+  const compRef = mesToCompetencia(data.mes);
+
+  const row = hist.find(h => parseHistoricoMesToCompetencia(h.mes) === compRef)
+    || hist.find(h => (h.mes || '').toLowerCase() === (data.mes || '').toLowerCase());
+  if (!row) return;
+
+  const med = historicoRowMedida(row);
+  if (med > 0) {
+    d.medidaFPonta_kW = med;
+    d.medidaPonta_kW = 0;
+  }
+}
+
+function normalizeDemanda(data) {
+  const d = data.demanda || (data.demanda = {});
+  syncDemandaFromItens(data);
+  applyHistoricoConsumoToDemanda(data);
+
+  const contratada = extractContratadaKwFromBill(data);
+  if (contratada > 0) {
+    d.contratadaFPonta_kW = contratada;
+    d.contratadaPonta_kW = 0;
+  }
+
+  const medP = coerceKw(d.medidaPonta_kW);
+  const medFP = coerceKw(d.medidaFPonta_kW);
+  const unifiedMed = pickDemandMeasured(medP, medFP);
+  if (unifiedMed > 0) {
+    if (medFP > 0) {
+      d.medidaFPonta_kW = unifiedMed;
+      if (medP > 0 && Math.abs(medP - unifiedMed) > 0.01) d.medidaPonta_kW = medP;
+      else d.medidaPonta_kW = 0;
+    } else {
+      d.medidaPonta_kW = unifiedMed;
+      d.medidaFPonta_kW = 0;
+    }
+  }
 }
 
 function bandeiraColor(b) { return {verde:'text-secondary',amarela:'text-tertiary',vermelha1:'text-error',vermelha2:'text-error'}[b]||'text-neutral-400'; }
 function bandeiraLabel(b) { return {verde:'🟢 Verde',amarela:'🟡 Amarela',vermelha1:'🔴 Vermelha 1',vermelha2:'🔴 Vermelha 2'}[b]||b||'—'; }
 
 // ═══════════════ UPDATE ALL
+function renormalizeAllBills() {
+  propagateHistoricoConsumo();
+  state.bills.forEach(b => normalizeDemanda(b));
+
+  const contratadas = state.bills
+    .filter(b => b.tipoTarifa === 'MT' || extractContratadaKwFromBill(b) > 0)
+    .map(b => extractContratadaKwFromBill(b))
+    .filter(v => v > 0);
+
+  const consenso = pickContratadaConsenso(contratadas);
+  if (consenso > 0) {
+    state.bills.forEach(b => {
+      if (b.tipoTarifa !== 'MT' && getDemandaMedidaTotal(b) <= 0) return;
+      const cur = extractContratadaKwFromBill(b);
+      if (cur === 0 || cur < consenso) {
+        b.demanda = b.demanda || {};
+        b.demanda.contratadaFPonta_kW = consenso;
+        b.demanda.contratadaPonta_kW = 0;
+        if (!b.grandezasContratadas) b.grandezasContratadas = {};
+        b.grandezasContratadas.demandaKW = consenso;
+      }
+    });
+  }
+}
+
 function updateAllViews() {
+  renormalizeAllBills();
   updateDashboard();
   updateAnalise();
   updateHistorico();
@@ -1680,9 +1875,7 @@ function renderMTPage() {
   const totalAtiva = ePonta + eFP || b.kwh;
   document.getElementById('mt-kpi-energia-ativa').textContent = totalAtiva.toLocaleString('pt-BR') + ' kWh';
 
-  const dP = parseFloat(b.demanda?.medidaPonta_kW || b.demanda?.contratadaPonta_kW) || 0;
-  const dFP = parseFloat(b.demanda?.medidaFPonta_kW || b.demanda?.contratadaFPonta_kW) || 0;
-  document.getElementById('mt-kpi-demanda').textContent = (dP + dFP).toLocaleString('pt-BR') + ' kW';
+  document.getElementById('mt-kpi-demanda').textContent = getDemandaContratadaTotal(b).toLocaleString('pt-BR') + ' kW';
 
   const injP = parseFloat(b.geracaoDistribuida?.injetadaPonta_kWh) || 0;
   const injFP = parseFloat(b.geracaoDistribuida?.injetadaFPonta_kWh) || 0;
@@ -2367,32 +2560,102 @@ function parseDecimalInput(v) {
 function mesToCompetencia(mes) {
   const mo = { jan:1, fev:2, mar:3, abr:4, mai:5, jun:6, jul:7, ago:8, set:9, out:10, nov:11, dez:12 };
   const p = (mes || '').toLowerCase().split('/');
+  let year = parseInt(p[1], 10) || 0;
+  if (year > 0 && year < 100) year += 2000;
   const m = mo[p[0]] || 1;
-  return `${p[1] || '0000'}-${String(m).padStart(2, '0')}`;
+  return `${year || '0000'}-${String(m).padStart(2, '0')}`;
+}
+
+function parseHistoricoMesToCompetencia(mesStr) {
+  if (!mesStr) return null;
+  const s = String(mesStr).trim().toLowerCase();
+  const mo = { jan:1, fev:2, mar:3, abr:4, mai:5, jun:6, jul:7, ago:8, set:9, out:10, nov:11, dez:12 };
+
+  const named = s.match(/^([a-z]{3})\/(\d{2,4})$/);
+  if (named && mo[named[1]]) {
+    let year = parseInt(named[2], 10);
+    if (year < 100) year += 2000;
+    return `${year}-${String(mo[named[1]]).padStart(2, '0')}`;
+  }
+
+  const num = s.match(/^(\d{1,2})\/(\d{2,4})$/);
+  if (num) {
+    let year = parseInt(num[2], 10);
+    if (year < 100) year += 2000;
+    const month = parseInt(num[1], 10);
+    if (month >= 1 && month <= 12) return `${year}-${String(month).padStart(2, '0')}`;
+  }
+  return mesToCompetencia(s);
+}
+
+function historicoRowMedida(row) {
+  const medFP = coerceKw(
+    row.demandaForaPonta_kW ?? row.demandaFPonta_kW ?? row.demanda_fora_ponta_kW
+    ?? row.foraPonta_kW ?? row.demandaForaPonta
+  );
+  const medP = coerceKw(row.demandaPonta_kW ?? row.demanda_ponta_kW ?? row.ponta_kW);
+  return pickDemandMeasured(medP, medFP);
+}
+
+function getBestHistoricoConsumo() {
+  let best = [];
+  state.bills.forEach(b => {
+    const h = b.historicoConsumo || [];
+    if (h.length > best.length) best = h;
+  });
+  return best;
+}
+
+function propagateHistoricoConsumo() {
+  const best = getBestHistoricoConsumo();
+  if (best.length < 6) return;
+  state.bills.forEach(b => {
+    if (!Array.isArray(b.historicoConsumo) || b.historicoConsumo.length < best.length) {
+      b.historicoConsumo = best.map(r => ({ ...r }));
+    }
+  });
+}
+
+function buildHistoricoMedidaMap() {
+  const map = new Map();
+  const ingest = (rows) => {
+    (rows || []).forEach(row => {
+      const comp = parseHistoricoMesToCompetencia(row.mes);
+      if (!comp) return;
+      const med = historicoRowMedida(row);
+      if (med > 0) map.set(comp, Math.max(map.get(comp) || 0, med));
+    });
+  };
+  state.bills.forEach(b => ingest(b.historicoConsumo));
+  if (map.size < 6) ingest(getBestHistoricoConsumo());
+  return map;
+}
+
+function getContratadaGlobalKw() {
+  const vals = state.bills.map(b => extractContratadaKwFromBill(b)).filter(v => v > 0);
+  return pickContratadaConsenso(vals);
 }
 
 function fmtKw(v) { return `${Math.round(v)} kW`; }
+function fmtKwPeak(v) {
+  const n = Math.round(parseFloat(v) * 10) / 10;
+  if (!Number.isFinite(n) || n <= 0) return '—';
+  return `${n.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kW`;
+}
 function fmtMoney(v) { return `R$ ${Math.round(v).toLocaleString('pt-BR')}`; }
 function fmtMoneyFull(v) { return `R$ ${fmtR(v)}`; }
 
 function getDemandaMedidaTotal(b) {
   const d = b.demanda || {};
-  const medP = parseFloat(d.medidaPonta_kW) || 0;
-  const medFP = parseFloat(d.medidaFPonta_kW) || 0;
-  return Math.max(medP + medFP, medP, medFP);
+  return pickDemandMeasured(coerceKw(d.medidaPonta_kW), coerceKw(d.medidaFPonta_kW));
 }
 
 function getDemandaContratadaTotal(b) {
-  const d = b.demanda || {};
-  const conP = parseFloat(d.contratadaPonta_kW) || 0;
-  const conFP = parseFloat(d.contratadaFPonta_kW) || 0;
-  const sum = conP + conFP;
-  if (sum > 0) return sum;
-  return getDemandaMedidaTotal(b);
+  return extractContratadaKwFromBill(b);
 }
 
 function billHasDemandData(b) {
-  return getDemandaMedidaTotal(b) > 0 || getDemandaContratadaTotal(b) > 0;
+  return getDemandaMedidaTotal(b) > 0 || extractContratadaKwFromBill(b) > 0;
 }
 
 function extractDemandMonth(b) {
@@ -2400,7 +2663,8 @@ function extractDemandMonth(b) {
   const contratada = getDemandaContratadaTotal(b);
   const valDem = (parseFloat(b.demanda?.valorPonta) || 0) + (parseFloat(b.demanda?.valorFPonta) || 0);
   const dmcr = (parseFloat(b.DMCR?.valorPonta) || 0) + (parseFloat(b.DMCR?.valorForaPonta) || 0);
-  const tarifaKw = medida > 0 ? valDem / medida : (contratada > 0 && valDem > 0 ? valDem / contratada : 0);
+  const baseKw = Math.max(medida, contratada) || medida || contratada;
+  const tarifaKw = baseKw > 0 && valDem > 0 ? valDem / baseKw : 0;
   return {
     mes: b.mes,
     competencia: mesToCompetencia(b.mes),
@@ -2494,19 +2758,51 @@ function getSimulationParams() {
   };
 }
 
+function getMedidaHistoricoStats(months) {
+  const histMedida = buildHistoricoMedidaMap();
+  const comps = new Set(months.map(m => m.competencia));
+  const vals = [];
+  histMedida.forEach((v, comp) => {
+    if (comps.has(comp) && v > 0) vals.push(v);
+  });
+  if (!vals.length) vals.push(...months.map(m => m.medida).filter(v => v > 0));
+  if (!vals.length) return { max: 0, min: 0 };
+  return { max: Math.max(...vals), min: Math.min(...vals) };
+}
+
 function getDemandMonths() {
   let bills = state.bills.filter(b => (b.tipoTarifa === 'MT' || billHasDemandData(b)) && billHasDemandData(b));
   bills = [...bills].sort((a, b) => parseMonthYear(a.mes) - parseMonthYear(b.mes));
   const params = getSimulationParams();
   if (params.mesesFilter === '12') bills = bills.slice(-12);
   else if (params.mesesFilter === '24') bills = bills.slice(-24);
-  return bills.map(extractDemandMonth).filter(m => m.medida > 0 || m.contratada > 0);
+
+  const histMedida = buildHistoricoMedidaMap();
+  const contratadaGlobal = getContratadaGlobalKw();
+
+  const billByComp = new Map();
+  bills.forEach(b => {
+    const m = extractDemandMonth(b);
+    billByComp.set(m.competencia, m);
+  });
+
+  const competencias = [...billByComp.keys()].sort();
+  const months = competencias.map(comp => {
+    const m = { ...billByComp.get(comp) };
+    const medHist = histMedida.get(comp);
+    if (medHist > 0) m.medida = medHist;
+    if (contratadaGlobal > 0) m.contratada = contratadaGlobal;
+    return m;
+  });
+
+  return months.filter(m => m.medida > 0 || m.contratada > 0);
 }
 
 function computeIARecommendation(months, params, contratadaAtual) {
   const medidas = months.map(m => m.medida);
-  const maxP = Math.max(...medidas);
-  const minP = Math.min(...medidas);
+  const histStats = getMedidaHistoricoStats(months);
+  const maxP = histStats.max || Math.max(...medidas, 0);
+  const minP = histStats.min || Math.min(...medidas, 0);
   const step = params.sweepStep || 1;
   const paramsIA = { ...params, tolerance: IA_TOLERANCIA };
 
@@ -2538,8 +2834,8 @@ function computeIARecommendation(months, params, contratadaAtual) {
 function buildIANarrative(v) {
   const p = [];
   p.push(`Eu indico, baseado neste histórico de uso, que a demanda contratada deveria ficar em <strong>${v.D} kW</strong>.`);
-  p.push(`O pico máximo que você teve foi <strong>${Math.round(v.maxP)} kW</strong> e o menor foi <strong>${Math.round(v.minP)} kW</strong>. Hoje você contrata <strong>${Math.round(v.contratadaAtual)} kW</strong> — ou seja, paga por <strong>${Math.round(v.excessoContratado)} kW</strong> que não utiliza no dia a dia.`);
-  p.push(`Com <strong>${v.D} kW</strong> contratados, você pode usar até <strong>${Math.round(v.limiteSemMulta)} kW</strong> (10% acima) sem cobrança de ultrapassagem. Seu pico de ${Math.round(v.maxP)} kW ${v.semMultaNoPico ? '<strong>fica dentro dessa faixa — sem multa</strong>' : 'pode gerar ultrapassagem pontual, mas ainda assim tende a ser mais barato que manter a demanda inflada'}.`);
+  p.push(`O pico máximo que você teve foi <strong>${fmtKwPeak(v.maxP).replace(' kW', '')} kW</strong> e o menor foi <strong>${fmtKwPeak(v.minP).replace(' kW', '')} kW</strong>. Hoje você contrata <strong>${Math.round(v.contratadaAtual)} kW</strong> — ou seja, paga por <strong>${Math.round(v.excessoContratado)} kW</strong> que não utiliza no dia a dia.`);
+  p.push(`Com <strong>${v.D} kW</strong> contratados, você pode usar até <strong>${Math.round(v.limiteSemMulta)} kW</strong> (10% acima) sem cobrança de ultrapassagem. Seu pico de ${fmtKwPeak(v.maxP).replace(' kW', '')} kW ${v.semMultaNoPico ? '<strong>fica dentro dessa faixa — sem multa</strong>' : 'pode gerar ultrapassagem pontual, mas ainda assim tende a ser mais barato que manter a demanda inflada'}.`);
   if (v.excessoContratado > 0) {
     p.push(`Reduzir de ${Math.round(v.contratadaAtual)} kW para ${v.D} kW economiza cerca de <strong>${fmtMoney(v.economiaAnual)}/ano</strong> (sendo ~${fmtMoney(v.economiaDemandaAnual)} só em custo de demanda TUSD).`);
   }
@@ -2569,15 +2865,15 @@ function renderIAIndicadorUI(r) {
 
   set('ia-box-kw', kw);
   set('ia-box-text', ia.narrative);
-  set('ia-box-max', fmtKw(ia.maxP));
-  set('ia-box-min', fmtKw(ia.minP));
+  set('ia-box-max', fmtKwPeak(ia.maxP));
+  set('ia-box-min', fmtKwPeak(ia.minP));
   set('ia-box-contr', fmtKw(r.contratadaAtual));
   set('ia-box-limite', fmtKw(ia.limiteSemMulta));
 
   set('ia-page-kw', kw);
   set('ia-page-narrative', ia.narrative);
-  set('ia-page-max', fmtKw(ia.maxP));
-  set('ia-page-min', fmtKw(ia.minP));
+  set('ia-page-max', fmtKwPeak(ia.maxP));
+  set('ia-page-min', fmtKwPeak(ia.minP));
   set('ia-page-contr', fmtKw(r.contratadaAtual));
   set('ia-page-excesso', fmtKw(ia.excessoContratado));
   set('ia-page-limite', fmtKw(ia.limiteSemMulta));
@@ -2586,9 +2882,9 @@ function renderIAIndicadorUI(r) {
   const rationale = document.getElementById('ia-page-rationale');
   if (rationale) {
     rationale.innerHTML = `
-      <p>• Pico histórico: <strong>${Math.round(ia.maxP)} kW</strong> — a IA posiciona a contratação em ${ia.D} kW, ligeiramente acima do pico.</p>
+      <p>• Pico histórico: <strong>${fmtKwPeak(ia.maxP)}</strong> — a IA posiciona a contratação em ${ia.D} kW, ligeiramente acima do pico.</p>
       <p>• Tolerância regulatória simulada: <strong>10%</strong> acima de ${ia.D} kW = até ${Math.round(ia.limiteSemMulta)} kW sem multa.</p>
-      <p>• Você contrata <strong>${Math.round(r.contratadaAtual)} kW</strong> mas nunca passou de <strong>${Math.round(ia.maxP)} kW</strong> — pagando ~${Math.round(ia.excessoContratado)} kW extras todo mês.</p>
+      <p>• Você contrata <strong>${Math.round(r.contratadaAtual)} kW</strong> mas nunca passou de <strong>${fmtKwPeak(ia.maxP)}</strong> — pagando ~${Math.round(ia.excessoContratado)} kW extras todo mês.</p>
       <p>• Meses com ultrapassagem na proposta IA: <strong>${ia.sim.overMonths}</strong>.</p>`;
   }
 
@@ -2622,7 +2918,7 @@ function renderChartIndicadorIA(r) {
       labels,
       datasets: [
         { label: 'medida', data: r.months.map(m => m.medida), borderColor: '#f44336', tension: 0.25, pointRadius: 3 },
-        { label: 'contratada', data: labels.map(() => r.contratadaAtual), borderColor: '#e5e2e1', borderWidth: 2, pointRadius: 0 },
+        { label: 'contratada', data: r.months.map(m => m.contratada), borderColor: '#e5e2e1', borderWidth: 2, pointRadius: 0 },
         { label: 'indicador IA', data: labels.map(() => D), borderColor: '#4ae183', borderWidth: 3, pointRadius: 0 }
       ]
     },
@@ -2658,6 +2954,7 @@ Dados: ${JSON.stringify({ pico: r.ia.maxP, minimo: r.ia.minP, contratada: r.cont
 }
 
 function runDemandSimulation() {
+  renormalizeAllBills();
   const months = getDemandMonths();
   const params = getSimulationParams();
   const mtCount = state.bills.filter(b => b.tipoTarifa === 'MT' || billHasDemandData(b)).length;
@@ -2672,14 +2969,16 @@ function runDemandSimulation() {
   }
 
   const medidas = months.map(m => m.medida);
+  const histStats = getMedidaHistoricoStats(months);
   const avgTarifa = months.reduce((s, m) => s + (m.tarifaKw || 0), 0) / (months.filter(m => m.tarifaKw > 0).length || 1);
   params.avgTarifa = avgTarifa || 1;
 
   const p95 = percentile(medidas, 95);
   const p99 = percentile(medidas, 99);
-  const maxHist = Math.max(...medidas);
-  const minHist = Math.min(...medidas);
-  const contratadaAtual = Math.round(months.reduce((s, m) => s + m.contratada, 0) / months.length);
+  const maxHist = histStats.max || Math.max(...medidas, 0);
+  const minHist = histStats.min || Math.min(...medidas, 0);
+  const contratadaAtual = pickContratadaConsenso(months.map(m => m.contratada).filter(v => v > 0))
+    || Math.round(months.reduce((s, m) => s + m.contratada, 0) / (months.filter(m => m.contratada > 0).length || 1));
 
   const ia = computeIARecommendation(months, params, contratadaAtual);
 
@@ -2733,7 +3032,7 @@ function updateAnaliticoPage() {
 function renderAnaliticoResults(r) {
   document.getElementById('kpi-dem-contr').textContent = fmtKw(r.contratadaAtual);
   document.getElementById('kpi-dem-rec').textContent = fmtKw(r.recomendada);
-  document.getElementById('kpi-dem-max').textContent = fmtKw(r.maxHist);
+  document.getElementById('kpi-dem-max').textContent = fmtKwPeak(r.maxHist);
   document.getElementById('kpi-over-months').textContent = String(r.atual.overMonths);
   document.getElementById('kpi-custo-periodo').textContent = fmtMoney(r.atual.totalCost);
   document.getElementById('kpi-custo-periodo-sub').textContent = `${r.months.length} meses`;
@@ -2779,7 +3078,7 @@ function buildLaudoText(r) {
     `A otimização com dados históricos de consumo e demanda da unidade consumidora (${r.periodo}), ` +
     `considerando as opções disponíveis de contratação e as tarifas vigentes, apontou a necessidade de ajustes no contrato de energia. ` +
     `O Indicador IFES AI recomenda reduzir a demanda contratada de ${r.contratadaAtual} kW para ${r.recomendada} kW ` +
-    `(pico máximo ${Math.round(ia?.maxP || r.maxHist)} kW, mínimo ${Math.round(ia?.minP || 0)} kW), ` +
+    `(pico máximo ${fmtKwPeak(ia?.maxP || r.maxHist).replace(' kW', '')} kW, mínimo ${fmtKwPeak(ia?.minP || r.minHist).replace(' kW', '')} kW), ` +
     `com economia estimada de R$ ${fmtPdfNum(et.economia)} em 12 meses. ` +
     'Até 10% acima da demanda contratada não há cobrança de ultrapassagem. ' +
     'Recomenda-se também ações de eficiência energética, microgeração e análise de fator de potência.'
@@ -2809,7 +3108,7 @@ function renderRelatorioOtimizacao(r) {
     return `<tr>
       <td>${m.competencia}</td>
       <td class="num">${m.medida.toFixed(1)}</td>
-      <td class="num">${r.contratadaAtual.toFixed(0)}</td>
+      <td class="num">${m.contratada.toFixed(0)}</td>
       <td class="num">${(sug?.suggestedD || r.recomendada).toFixed(0)}</td>
     </tr>`;
   }).join('');
@@ -2821,7 +3120,7 @@ function renderChartDemandaRelatorio(r) {
   if (state.analiticoCharts.relatorio) state.analiticoCharts.relatorio.destroy();
   const labels = r.months.map(m => compToShort(m.competencia));
   const projetada = r.months.map(m => m.medida);
-  const contratada = r.months.map(() => r.contratadaAtual);
+  const contratada = r.months.map(m => m.contratada);
   const sugerida = r.months.map(m => {
     const sug = r.seasonal?.perMonth?.find(p => p.competencia === m.competencia);
     return sug?.suggestedD || r.recomendada;
@@ -2895,7 +3194,7 @@ function renderChartDemandaRelatorio(r) {
 
 function renderAnaliticoCharts(r) {
   const labels = r.months.map(m => m.competencia);
-  const contratada = r.contratadaAtual;
+  const contratadaSeries = r.months.map(m => m.contratada);
   const recomendada = r.recomendada;
 
   if (state.analiticoCharts.bar) state.analiticoCharts.bar.destroy();
@@ -2919,7 +3218,7 @@ function renderAnaliticoCharts(r) {
     data: {
       labels,
       datasets: [
-        { label: 'Contratada', data: labels.map(() => contratada), backgroundColor: 'rgba(137,146,155,0.7)', borderRadius: 3 },
+        { label: 'Contratada', data: contratadaSeries, backgroundColor: 'rgba(137,146,155,0.7)', borderRadius: 3 },
         { label: 'Máxima medida', data: r.months.map(m => m.medida), backgroundColor: 'rgba(255,152,0,0.75)', borderRadius: 3 },
         { label: 'Ótima (IA)', type: 'line', data: labels.map(() => recomendada), borderColor: '#4ae183', borderWidth: 2, pointRadius: 0, fill: false },
         { label: 'P95', type: 'line', data: labels.map(() => r.p95), borderColor: 'rgba(255,152,0,0.6)', borderDash: [6, 4], borderWidth: 1.5, pointRadius: 0, fill: false },
@@ -2935,7 +3234,7 @@ function renderAnaliticoCharts(r) {
       labels,
       datasets: [
         { label: 'medida', data: r.months.map(m => m.medida), borderColor: '#f44336', backgroundColor: 'rgba(244,67,54,0.1)', tension: 0.25, pointRadius: 2 },
-        { label: 'contratada', data: labels.map(() => contratada), borderColor: '#e5e2e1', borderWidth: 2, pointRadius: 0, fill: false },
+        { label: 'contratada', data: contratadaSeries, borderColor: '#e5e2e1', borderWidth: 2, pointRadius: 0, fill: false },
         { label: 'indicador IA', data: labels.map(() => recomendada), borderColor: '#4ae183', borderWidth: 2, pointRadius: 0, fill: false }
       ]
     },
@@ -3240,7 +3539,7 @@ async function exportDemandPDF() {
       return [
         m.competencia,
         m.medida.toFixed(1),
-        r.contratadaAtual.toFixed(0),
+        m.contratada.toFixed(0),
         (sug?.suggestedD || r.recomendada).toFixed(0)
       ];
     });
